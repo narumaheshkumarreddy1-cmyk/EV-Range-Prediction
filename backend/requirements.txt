@@ -1,0 +1,11 @@
+flask
+flask-cors
+flask-sqlalchemy
+flask-migrate
+flask-login
+werkzeug
+gunicorn
+numpy
+requests
+pandas
+scikit-learn

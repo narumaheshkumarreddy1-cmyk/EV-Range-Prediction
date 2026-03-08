@@ -1,0 +1,42 @@
+# Vercel ignore file
+# Ignore files and directories that should not be deployed
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+.venv/
+*.egg-info/
+dist/
+build/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Database
+*.db
+*.sqlite
+*.sqlite3
+instance/
+
+# Git
+.git/
+.gitignore
+
+# Node (if any)
+node_modules/
+
+# Misc
+*.log
+.DS_Store
+Thumbs.db
+README.md
+TODO.md
+

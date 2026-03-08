@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Login - EV Range Prediction</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body class="auth-page">
+    <div class="auth-container">
+        <h1>Login</h1>
+        
+        <div id="login-form">
+            <div class="form-group">
+                <label>Username:</label>
+                <input type="text" id="login-username" placeholder="Your username">
+            </div>
+
+            <div class="form-group">
+                <label>Password:</label>
+                <input type="password" id="login-password" placeholder="Your password">
+            </div>
+
+            <button onclick="handleLogin()">Login</button>
+
+            <p id="login-message"></p>
+        </div>
+
+        <div class="auth-link">
+            Don't have an account? <a href="/signup">Sign up here</a>
+        </div>
+    </div>
+
+    <script src="/static/js/auth.js"></script>
+</body>
+</html>

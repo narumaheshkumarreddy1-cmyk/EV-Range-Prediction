@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Prediction Result - EV Range Prediction</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+    <link rel="stylesheet" href="/static/css/dashboard.css">
+    <!-- Leaflet CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+</head>
+<body>
+    <div class="dashboard-container">
+        <nav class="sidebar">
+            <div class="sidebar-header">
+                <h2>EV Range</h2>
+            </div>
+            <ul class="sidebar-menu">
+                <!-- Issue #4: Fixed hardcoded URLs with url_for -->
+                <li><a href="{{ url_for('ev.dashboard_page') }}">🏠 Dashboard</a></li>
+                <li><a href="{{ url_for('ev.profile_page') }}">👤 Profile</a></li>
+                <li><a href="{{ url_for('ev.settings_page') }}">⚙️ Settings</a></li>
+                <li><a href="{{ url_for('ev.map_page') }}">🗺️ Navigation</a></li>
+                <li><a href="{{ url_for('ev.home') }}">⚡ Prediction</a></li>
+                <li><a href="#" onclick="handleLogout()">🚪 Logout</a></li>
+            </ul>
+        </nav>
+
+        <div class="main-content">
+            <div class="top-bar">
+                <h1>Prediction Result</h1>
+                <div class="user-menu">
+                    <img id="result-user-photo" src="/static/images/default-profile.png" alt="Profile" class="user-avatar">
+                    <span id="result-username"></span>
+                </div>
+            </div>
+
+            <div class="card" style="max-width: 800px; margin: 20px auto;">
+                
+                <!-- Issue #1: Ensure safe handling of prediction variable -->
+                {% if prediction %}
+                
+                <h2>EV Range Prediction Result</h2>
+                
+                <!-- Live Battery Simulation Section -->
+                <!-- Issue #3: Container now visible via JS when prediction is valid -->
+                <div id="simulation-container" style="display: none; margin-top: 30px; padding: 20px; background: #f8f9fa; border-radius: 8px; border: 2px solid #667eea;">
+                    <h3 style="margin-bottom: 15px; color: #667eea; text-align: center;">🔋 Live Adaptive EV Range Simulation</h3>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 15px; text-align: center;">
+                        <div style="padding: 15px; background: white; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+                            <div style="font-size: 14px; color: #666; margin-bottom: 5px;">Current Speed</div>
+                            <div id="current-speed" style="font-size: 32px; font-weight: bold; color: #667eea;">{{ prediction.speed }}</div>
+                            <div style="font-size: 12px; color: #999;">km/h</div>
+                        </div>
+                        <div style="padding: 15px; background: white; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+                            <div style="font-size: 14px; color: #666; margin-bottom: 5px;">Live Battery %</div>
+                            <div id="live-battery" style="font-size: 32px; font-weight: bold; color: #28a745;">{{ prediction.battery }}</div>
+                            <div style="font-size: 12px; color: #999;">%</div>
+                        </div>
+                        <div style="padding: 15px; background: white; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+                            <div style="font-size: 14px; color: #666; margin-bottom: 5px;">Distance Travelled</div>
+                            <div id="distanceTravelled" style="font-size: 32px; font-weight: bold; color: #667eea;">0.0</div>
+                            <div style="font-size: 12px; color: #999;">km</div>
+                        </div>
+                    </div>
+                    
+                    <!-- Efficiency Status Row -->
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 15px; text-align: center;">
+                        <div style="padding: 12px; background: white; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+                            <div style="font-size: 14px; color: #666; margin-bottom: 5px;">Efficiency Status</div>
+                            <div id="efficiency-status" style="font-size: 20px; font-weight: bold; color: #28a745;">Optimal</div>
+                        </div>
+                        <div style="padding: 12px; background: white; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+                            <div style="font-size: 14px; color: #666; margin-bottom: 5px;">Predicted Range</div>
+                            <div id="travelDistance" style="font-size: 20px; font-weight: bold; color: #28a745;">{{ prediction.predicted_range_km }}</div>
+                            <div style="font-size: 12px; color: #999;">km</div>
+                        </div>
+                    </div>
+                    
+                    <!-- Destination & Battery Sufficiency Row -->
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 15px; text-align: center;">
+                        <div style="padding: 12px; background: white; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+                            <div style="font-size: 14px; color: #666; margin-bottom: 5px;">Route Distance</div>
+                            <div id="routeDistance" style="font-size: 20px; font-weight: bold; color: #667eea;">--</div>
+                            <div style="font-size: 12px; color: #999;">km</div>
+                        </div>
+                        <div style="padding: 12px; background: white; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+                            <div style="font-size: 14px; color: #666; margin-bottom: 5px;">Battery Status</div>
+                            <div id="battery-sufficiency" style="font-size: 20px; font-weight: bold; color: #666;">--</div>
+                            <div id="differenceDistance" style="font-size: 14px; color: #666;">--</div>
+                        </div>
+                    </div>
+                    
+                    <div style="margin-top: 15px; padding: 12px; background: #e7f3ff; border-radius: 5px; text-align: center; color: #0066cc;">
+                        <span id="simulation-status">Initializing simulation...</span>
+                    </div>
+                    
+                    <!-- Open in Google Maps Button - Only works if destination exists -->
+                    <div style="margin-top: 20px; text-align: center;">
+                        <button id="openGoogleMapsBtn" class="nav-btn">
+                            Open in Google Maps
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Charging Stations List Section -->
+                <div id="charging-stations-section" class="charging-stations-section" style="display: none;">
+                    <h3>⚡ Nearby Charging Stations (Next 100 km)</h3>
+                    <div id="stations-list"></div>
+                </div>
+                
+                {% else %}
+                <!-- Fallback when prediction is not available -->
+                <h2>No Prediction Data Available</h2>
+                <p style="text-align: center; padding: 20px;">
+                    No prediction data found. Please <a href="{{ url_for('ev.predict_page') }}">make a prediction</a> first.
+                </p>
+                {% endif %}
+                
+                <!-- Store prediction data in a data attribute for safe JS access -->
+                <div id="prediction-data" 
+                    {% if prediction %}
+                    data-prediction='{{ prediction | tojson | safe }}'
+                    {% else %}
+                    data-prediction=""
+                    {% endif %}
+                    style="display: none;"></div>
+                
+            </div>
+        </div>
+    </div>
+
+    <script src="/static/js/auth.js"></script>
+    <script src="/static/js/simulation.js"></script>
+    <!-- Leaflet JS -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script>
+        // Issue #6: Wrap entire JS logic inside try-catch and log errors properly
+        document.addEventListener('DOMContentLoaded', function() {
+            try {
+                checkAuthentication();
+                if (typeof updateResultUserInfo === 'function') {
+                    updateResultUserInfo();
+                }
+                
+                // Issue #2: Fix direct usage of prediction - Get from data attribute
+                var predictionDataElement = document.getElementById('prediction-data');
+                var predictionData = null;
+                
+                if (predictionDataElement && predictionDataElement.dataset.prediction) {
+                    try {
+                        predictionData = JSON.parse(predictionDataElement.dataset.prediction);
+                    } catch (e) {
+                        console.error("Prediction data parsing failed:", e);
+                        predictionData = null;
+                    }
+                }
+                
+                console.log('Prediction data received:', predictionData);
+                
+                // Issue #5: Add null safety before accessing predictionData properties
+                // Check if prediction data exists and has valid predicted_range_km
+                if (predictionData && predictionData.predicted_range_km !== undefined && predictionData.predicted_range_km !== null) {
+                    
+                    // Issue #3: Ensure simulation container is displayed
+                    // Show simulation container after prediction is validated
+                    var simulationContainer = document.getElementById("simulation-container");
+                    if (simulationContainer) {
+                        simulationContainer.style.display = "block";
+                        console.log('Simulation container is now visible');
+                    }
+                    
+                    // Prepare simulation data with all required fields
+                    // Issue #5: Add null safety for all property accesses
+                    var simulationData = {
+                        battery: predictionData.battery !== undefined ? predictionData.battery : 100,
+                        estimated_range_km: predictionData.predicted_range_km !== undefined ? predictionData.predicted_range_km : 0,
+                        full_range_km: predictionData.full_range_km !== undefined ? predictionData.full_range_km : (predictionData.predicted_range_km !== undefined ? predictionData.predicted_range_km : 0),
+                        speed: predictionData.speed !== undefined ? predictionData.speed : 60,
+                        ac: predictionData.ac !== undefined ? predictionData.ac : false,
+                        traffic: predictionData.traffic !== undefined ? predictionData.traffic : 'medium',
+                        vehicle_load: predictionData.vehicle_load !== undefined ? predictionData.vehicle_load : (predictionData.weight !== undefined ? predictionData.weight : 0),
+                        destination: predictionData.destination !== undefined ? predictionData.destination : ''
+                    };
+                    
+                    console.log('Initializing simulation with data:', simulationData);
+                    
+                    // Start the simulation
+                    if (typeof initSimulation === 'function') {
+                        initSimulation(simulationData);
+                    }
+                } else {
+                    console.warn('No valid prediction data available for simulation');
+                }
+                
+                // Issue #6: Ensure Google Maps button only works if destination exists
+                // Setup Open in Google Maps button click handler
+                var googleMapsBtn = document.getElementById("openGoogleMapsBtn");
+                if (googleMapsBtn) {
+                    googleMapsBtn.addEventListener("click", function() {
+                        // Issue #5 & #6: Add null safety and check destination exists
+                        var destination = predictionData && predictionData.destination ? predictionData.destination : '';
+                        
+                        if (destination && destination.trim() !== '') {
+                            var googleUrl = 'https://www.google.com/maps/dir/?api=1&destination=' + encodeURIComponent(destination);
+                            window.open(googleUrl, '_blank');
+                        } else {
+                            // Show alert if no destination is set
+                            alert('No destination set. Please set a destination in your prediction to use Google Maps navigation.');
+                            console.warn('Google Maps button clicked but no destination available');
+                        }
+                    });
+                }
+                
+            } catch (error) {
+                // Issue #6: Log errors properly
+                console.error('Error in result page initialization:', error);
+                console.error('Error stack:', error.stack);
+            }
+        });
+    </script>
+</body>
+</html>

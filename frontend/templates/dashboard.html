@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Dashboard - EV Range Prediction</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+    <link rel="stylesheet" href="/static/css/dashboard.css">
+</head>
+<body>
+    <div class="dashboard-container">
+        <nav class="sidebar">
+            <div class="sidebar-header">
+                <h2>EV Range</h2>
+            </div>
+            <ul class="sidebar-menu">
+                <li><a href="{{ url_for('ev.dashboard_page') }}" class="active">🏠 Dashboard</a></li>
+                <li><a href="{{ url_for('ev.profile_page') }}">👤 Profile</a></li>
+                <li><a href="{{ url_for('ev.settings_page') }}">⚙️ Settings</a></li>
+                <li><a href="{{ url_for('ev.map_page') }}">🗺️ Navigation</a></li>
+                <li><a href="{{ url_for('ev.predict_page') }}">⚡ Prediction</a></li>
+                <li><a href="#" onclick="handleLogout()">🚪 Logout</a></li>
+            </ul>
+        </nav>
+
+        <div class="main-content">
+            <div class="top-bar">
+                <h1>Dashboard</h1>
+                <div class="user-menu">
+                    <img id="dashboard-user-photo" src="/static/images/default-profile.png" alt="Profile" class="user-avatar">
+                    <span id="dashboard-username"></span>
+                </div>
+            </div>
+
+            <div class="dashboard-grid">
+                <div class="card" onclick="window.location.href='/predict-page'">
+                    <h3>Prediction</h3>
+                    <p>Make EV range predictions</p>
+                </div>
+                <div class="card" onclick="window.location.href='/map'">
+                    <h3>Navigation</h3>
+                    <p>Navigate with smart routing</p>
+                </div>
+                <div class="card" onclick="window.location.href='/profile-page'">
+                    <h3>Profile</h3>
+                    <p>Manage your profile</p>
+                </div>
+                <div class="card" onclick="window.location.href='/settings'">
+                    <h3>Settings</h3>
+                    <p>App preferences</p>
+                </div>
+                <div class="card" onclick="handleLogout()">
+                    <h3>Logout</h3>
+                    <p>Sign out of your account</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="/static/js/auth.js"></script>
+    <script src="/static/js/dashboard.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            checkAuthentication();
+            loadDashboardData();
+        });
+    </script>
+</body>
+</html>

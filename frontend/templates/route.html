@@ -1,0 +1,378 @@
+ <!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title>Route - EV Navigation</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    
+    <link rel="stylesheet" href="/static/css/style.css">
+    <link rel="stylesheet" href="/static/css/dashboard.css">
+    
+    <!-- Leaflet CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    
+    <style>
+        /* Route Page Styles */
+        html, body {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            width: 100%;
+            overflow: hidden;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+        }
+        
+        /* Full Screen Map */
+        #route-map {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            z-index: 1;
+        }
+        
+        /* Floating Info Card - Top Right */
+        .route-info-card {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+            z-index: 1000;
+min-width: 260px;
+            display: none;
+        }
+        
+        .route-info-card.show {
+            display: block;
+        }
+        
+        .route-info-card h3 {
+            margin: 0 0 15px 0;
+            font-size: 16px;
+            color: #333;
+            border-bottom: 2px solid #667eea;
+            padding-bottom: 10px;
+            word-break: break-word;
+        }
+        
+        .route-info-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 0;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .route-info-row:last-child {
+            border-bottom: none;
+        }
+        
+        .route-info-label {
+            color: #666;
+            font-size: 13px;
+        }
+        
+.route-info-value {
+            font-weight: 600;
+            font-size: 14px;
+            color: #333;
+        }
+        
+        .route-info-value.distance {
+            color: #007bff;
+        }
+        
+        .route-info-value.eta {
+            color: #28a745;
+        }
+        
+        .route-info-value.stations {
+            color: #2ecc71;
+        }
+        
+        .traffic-badge {
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 600;
+            color: white;
+        }
+        
+        .traffic-light {
+            background: #2ecc71;
+        }
+        
+        .traffic-moderate {
+            background: #f39c12;
+        }
+        
+.traffic-heavy {
+            background: #e74c3c;
+        }
+        
+        /* EV Station marker style */
+        .ev-station-marker {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: #2ecc71;
+            border: 3px solid #fff;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            font-size: 14px;
+        }
+        
+        /* Control Buttons - Bottom Center */
+        .route-controls {
+            position: absolute;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 10px;
+            z-index: 1000;
+        }
+        
+        .route-control-btn {
+            padding: 12px 24px;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border: none;
+            border-radius: 25px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            color: #333;
+        }
+        
+        .route-control-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
+        }
+        
+        .route-control-btn.primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        
+        /* Status Message */
+        .route-status {
+            position: absolute;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            padding: 12px 24px;
+            border-radius: 25px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+            z-index: 1000;
+            font-size: 14px;
+            font-weight: 500;
+            display: none;
+        }
+        
+        .route-status.show {
+            display: block;
+            animation: fadeIn 0.3s ease;
+        }
+        
+        .route-status.info {
+            color: #1565c0;
+        }
+        
+        .route-status.success {
+            color: #2e7d32;
+        }
+        
+        .route-status.error {
+            color: #c62828;
+        }
+        
+        .route-status.loading {
+            color: #e65100;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateX(-50%) translateY(-10px); }
+            to { opacity: 1; transform: translateX(-50%) translateY(0); }
+        }
+        
+        /* Loading Spinner */
+        .loading-spinner {
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            border: 2px solid #e0e0e0;
+            border-top-color: #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-right: 8px;
+            vertical-align: middle;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        
+        /* Search Panel */
+        .search-panel {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 12px;
+            padding: 12px 15px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+            z-index: 1000;
+            display: flex;
+            gap: 8px;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+        }
+        
+        .search-panel input {
+            padding: 8px 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 20px;
+            font-size: 13px;
+            outline: none;
+            width: 180px;
+            transition: border-color 0.3s;
+        }
+        
+        .search-panel input:focus {
+            border-color: #667eea;
+        }
+        
+        .search-panel button {
+            padding: 8px 16px;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+        
+        .search-panel button:hover {
+            background: #764ba2;
+        }
+        
+        /* Place Count Badge */
+        .place-count {
+            font-size: 11px;
+            color: #888;
+            margin-left: auto;
+            padding: 2px 6px;
+            background: #f0f0f0;
+            border-radius: 10px;
+        }
+        
+        /* Mobile Responsive */
+        @media (max-width: 480px) {
+            .route-info-card {
+                top: 10px;
+                right: 10px;
+                left: 10px;
+                min-width: auto;
+            }
+            
+            .route-controls {
+                bottom: 20px;
+            }
+            
+            .route-control-btn {
+                padding: 10px 18px;
+                font-size: 13px;
+            }
+            
+            .route-status {
+                top: 10px;
+                left: 10px;
+                right: 10px;
+                transform: none;
+                text-align: center;
+            }
+            
+            .filter-panel {
+                top: auto;
+                bottom: 80px;
+                left: 10px;
+                right: 10px;
+                min-width: auto;
+            }
+            
+            .search-panel {
+                left: 10px;
+                right: 10px;
+                width: auto;
+            }
+            
+            .search-panel input {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Full Screen Map -->
+    <div id="route-map"></div>
+    
+    <!-- Status Message -->
+    <div id="route-status" class="route-status"></div>
+    
+    <!-- Search Panel -->
+    <div class="search-panel">
+        <input type="text" id="place-search-input" placeholder="Search places..." autocomplete="off">
+        <button type="button" id="place-search-btn">Search</button>
+    </div>
+    
+    <!-- Floating Info Card -->
+    <div id="route-info" class="route-info-card">
+        <h3 id="destination-name">Destination</h3>
+        <div class="route-info-row">
+            <span class="route-info-label">Distance</span>
+            <span class="route-info-value" id="route-distance">-- km</span>
+        </div>
+        <div class="route-info-row">
+            <span class="route-info-label">ETA</span>
+            <span class="route-info-value" id="route-eta">-- min</span>
+        </div>
+        <div class="route-info-row">
+            <span class="route-info-label">Traffic</span>
+            <span class="traffic-badge traffic-light" id="route-traffic">Light</span>
+        </div>
+        <div class="route-info-row">
+            <span class="route-info-label">EV Stations Along Route:</span>
+            <span class="route-info-value stations" id="route-stations">0</span>
+        </div>
+    </div>
+    
+    <!-- Control Buttons -->
+    <div class="route-controls">
+        <button class="route-control-btn primary" id="recenter-btn">📍 Recenter</button>
+        <button class="route-control-btn" id="clear-btn">✕ Clear Route</button>
+    </div>
+    
+    <!-- Leaflet JS -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    
+    <!-- Route JavaScript -->
+    <script src="/static/js/route.js"></script>
+</body>
+</html>

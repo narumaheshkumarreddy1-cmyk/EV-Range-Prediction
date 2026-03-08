@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title>Navigate - EV Range Prediction</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="/static/css/dashboard.css">
+    
+    <style>
+        /* Navigation Page - Search Only (No Map) */
+        body {
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .container {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+            width: 90%;
+            max-width: 500px;
+            text-align: center;
+        }
+        
+        .logo {
+            font-size: 32px;
+            margin-bottom: 10px;
+        }
+        
+        h1 {
+            color: #333;
+            margin: 0 0 10px 0;
+            font-size: 24px;
+        }
+        
+        p {
+            color: #666;
+            margin: 0 0 30px 0;
+        }
+        
+        .search-box {
+            position: relative;
+            margin-bottom: 20px;
+        }
+        
+        .search-box input {
+            width: 100%;
+            padding: 16px 20px;
+            border: 2px solid #e0e0e0;
+            border-radius: 12px;
+            font-size: 16px;
+            outline: none;
+            transition: border-color 0.3s;
+            box-sizing: border-box;
+        }
+        
+        .search-box input:focus {
+            border-color: #667eea;
+        }
+        
+        .autocomplete-list {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+            max-height: 300px;
+            overflow-y: auto;
+            z-index: 100;
+            display: none;
+            margin-top: 5px;
+            text-align: left;
+        }
+        
+        .autocomplete-list.visible {
+            display: block;
+        }
+        
+        .autocomplete-item {
+            padding: 12px 15px;
+            cursor: pointer;
+            border-bottom: 1px solid #f0f0f0;
+            transition: background 0.2s;
+        }
+        
+        .autocomplete-item:last-child {
+            border-bottom: none;
+        }
+        
+        .autocomplete-item:hover {
+            background: #f8f9fa;
+        }
+        
+        .autocomplete-item strong {
+            color: #333;
+            font-size: 14px;
+            display: block;
+        }
+        
+        .autocomplete-item small {
+            color: #999;
+            font-size: 12px;
+        }
+        
+        .back-btn {
+            display: inline-block;
+            margin-top: 20px;
+            color: #667eea;
+            text-decoration: none;
+            font-weight: 600;
+        }
+        
+        .back-btn:hover {
+            text-decoration: underline;
+        }
+        
+        .status-message {
+            margin-top: 15px;
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-size: 14px;
+            display: none;
+        }
+        
+        .status-message.show {
+            display: block;
+        }
+        
+        .status-message.info {
+            background: #e3f2fd;
+            color: #1565c0;
+        }
+        
+        .status-message.success {
+            background: #e8f5e9;
+            color: #2e7d32;
+        }
+        
+        .status-message.error {
+            background: #ffebee;
+            color: #c62828;
+        }
+        
+        .status-message.loading {
+            background: #fff3e0;
+            color: #e65100;
+        }
+        
+        /* Recent searches */
+        .recent-searches {
+            margin-top: 20px;
+            text-align: left;
+        }
+        
+        .recent-searches h3 {
+            font-size: 14px;
+            color: #999;
+            margin: 0 0 10px 0;
+        }
+        
+        .recent-item {
+            display: block;
+            padding: 10px 15px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            margin-bottom: 8px;
+            color: #333;
+            text-decoration: none;
+            font-size: 14px;
+        }
+        
+        .recent-item:hover {
+            background: #e9ecef;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="logo">🚗</div>
+        <h1>EV Navigation</h1>
+        <p>Search for your destination</p>
+        
+        <div class="search-box">
+            <input type="text" id="destination-input" placeholder="Enter destination address..." autocomplete="off">
+            <div class="autocomplete-list" id="autocomplete-list"></div>
+        </div>
+        
+        <div class="status-message" id="status-message"></div>
+        
+        <a href="/dashboard" class="back-btn">← Back to Dashboard</a>
+    </div>
+    
+    <script>
+        // Navigation page - Search only, redirects to route page
+        let searchTimeout;
+        
+        function showStatus(message, type) {
+            const el = document.getElementById('status-message');
+            el.textContent = message;
+            el.className = 'status-message show ' + type;
+            
+            if (type !== 'loading') {
+                setTimeout(function() {
+                    el.classList.remove('show');
+                }, 4000);
+            }
+        }
+        
+        // Setup search functionality
+        function setupSearch() {
+            const input = document.getElementById('destination-input');
+            const autocompleteList = document.getElementById('autocomplete-list');
+            
+            input.addEventListener('input', function(e) {
+                const query = e.target.value;
+                
+                if (query.length < 2) {
+                    autocompleteList.classList.remove('visible');
+                    return;
+                }
+                
+                clearTimeout(searchTimeout);
+                searchTimeout = setTimeout(function() {
+                    searchNominatim(query);
+                }, 300);
+            });
+            
+            input.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    const firstItem = autocompleteList.querySelector('.autocomplete-item');
+                    if (firstItem) {
+                        firstItem.click();
+                    }
+                }
+            });
+            
+            // Close autocomplete when clicking outside
+            document.addEventListener('click', function(e) {
+                if (!e.target.closest('.search-box')) {
+                    autocompleteList.classList.remove('visible');
+                }
+            });
+        }
+        
+        // Nominatim search
+        async function searchNominatim(query) {
+            const autocompleteList = document.getElementById('autocomplete-list');
+            
+            try {
+                showStatus('Searching...', 'loading');
+                
+                const encodedQuery = encodeURIComponent(query);
+                const url = `https://nominatim.openstreetmap.org/search?format=jsonv2&q=${encodedQuery}&addressdetails=1&limit=8`;
+                
+                const response = await fetch(url, {
+                    headers: { 'Accept-Language': 'en' }
+                });
+                
+                if (!response.ok) throw new Error('Search failed');
+                
+                const results = await response.json();
+                renderAutocomplete(results);
+                
+            } catch (err) {
+                console.error('Nominatim error:', err);
+                showStatus('Search failed. Try again.', 'error');
+            }
+        }
+        
+        function renderAutocomplete(results) {
+            const autocompleteList = document.getElementById('autocomplete-list');
+            autocompleteList.innerHTML = '';
+            
+            if (!results || results.length === 0) {
+                autocompleteList.classList.remove('visible');
+                showStatus('No results found', 'info');
+                return;
+            }
+            
+            results.forEach(function(item) {
+                const div = document.createElement('div');
+                div.className = 'autocomplete-item';
+                
+                // Get a shorter display name
+                const displayName = item.display_name.split(',').slice(0, 3).join(',');
+                
+                div.innerHTML = '<strong>' + displayName + '</strong><small>' + (item.type || '') + '</small>';
+                div.addEventListener('click', function() {
+                    selectDestination(item);
+                });
+                autocompleteList.appendChild(div);
+            });
+            
+            autocompleteList.classList.add('visible');
+            showStatus('Found ' + results.length + ' results', 'success');
+        }
+        
+        function selectDestination(item) {
+            const input = document.getElementById('destination-input');
+            const autocompleteList = document.getElementById('autocomplete-list');
+            
+            input.value = item.display_name.split(',').slice(0, 3).join(',');
+            autocompleteList.classList.remove('visible');
+            
+            // Get speed from URL parameters if available (from prediction)
+            const urlParams = new URLSearchParams(window.location.search);
+            const speed = urlParams.get('speed') || '60'; // Default to 60 km/h
+            
+            // Redirect to route page with destination coordinates and speed
+            const destName = encodeURIComponent(item.display_name);
+            const routeUrl = `/route?lat=${item.lat}&lng=${item.lon}&name=${destName}&speed=${speed}`;
+            
+            showStatus('Loading route...', 'loading');
+            window.location.href = routeUrl;
+        }
+        
+        // Initialize on DOM ready
+        document.addEventListener('DOMContentLoaded', function() {
+            setupSearch();
+            
+            // Focus on search input
+            document.getElementById('destination-input').focus();
+        });
+    </script>
+</body>
+</html>

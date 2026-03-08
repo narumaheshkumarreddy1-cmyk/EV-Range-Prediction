@@ -1,0 +1,13 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Run MATLAB Script",
+            "type": "cppdbg",
+            "request": "launch",
+            "program": "C:\\Users\\B.GOWTHAMSAIREDDY\\OneDrive\\Attachments\\college2\\DCN",
+            "args": ["-r", "run('${file}')"],
+            "cwd": "${workspaceFolder}"
+        }
+    ]
+}

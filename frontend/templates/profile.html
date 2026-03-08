@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Profile - EV Range Prediction</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+    <link rel="stylesheet" href="/static/css/dashboard.css">
+</head>
+<body>
+    <div class="dashboard-container">
+        <nav class="sidebar">
+            <div class="sidebar-header">
+                <h2>EV Range</h2>
+            </div>
+            <ul class="sidebar-menu">
+                <li><a href="{{ url_for('ev.dashboard_page') }}">Dashboard</a></li>
+                <li><a href="{{ url_for('ev.profile_page') }}" class="active">Profile</a></li>
+                <li><a href="{{ url_for('ev.settings_page') }}">Settings</a></li>
+                <li><a href="{{ url_for('ev.map_page') }}">Navigation</a></li>
+                <li><a href="{{ url_for('ev.predict_page') }}">Prediction</a></li>
+                <li><a href="#" onclick="handleLogout()">Logout</a></li>
+            </ul>
+        </nav>
+
+        <div class="main-content">
+            <div class="top-bar">
+                <h1>Your Profile</h1>
+                <div class="user-menu">
+                    <img id="profile-user-photo" src="/static/images/default-profile.png" alt="Profile" class="user-avatar">
+                    <span id="profile-top-username"></span>
+                </div>
+            </div>
+
+            <div class="profile-container">
+                <div class="profile-header">
+                    <img id="profile-main-photo" src="/static/images/default-profile.png" alt="Profile Photo" class="profile-header-photo">
+                    <div class="profile-header-info">
+                        <h2 id="profile-display-username"></h2>
+                        <p id="profile-display-email"></p>
+                        <p id="profile-display-bio"></p>
+                    </div>
+                </div>
+
+                <div class="profile-sections">
+                    <div class="profile-section">
+                        <h3>Personal Information</h3>
+                        <div class="profile-info">
+                            <div class="info-box">
+                                <label>Email</label>
+                                <p id="profile-email-value"></p>
+                            </div>
+                            <div class="info-box">
+                                <label>Phone</label>
+                                <p id="profile-phone-value"></p>
+                            </div>
+                        </div>
+                        <div class="info-grid">
+                            <div class="info-item">
+                                <span class="info-label">Username</span>
+                                <span class="info-value" id="profile-username-value"></span>
+                            </div>
+                            <div class="info-item">
+                                <span class="info-label">Location</span>
+                                <span class="info-value" id="profile-location-value"></span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="profile-section">
+                        <h3>Vehicle Information</h3>
+                        <div class="vehicle-card">
+                            <div class="vehicle-icon">🚗</div>
+                            <div class="vehicle-details">
+                                <div class="info-item">
+                                    <span class="info-label">Car Company</span>
+                                    <span class="info-value" id="profile-car-company-value"></span>
+                                </div>
+                                <div class="info-item">
+                                    <span class="info-label">Car Model</span>
+                                    <span class="info-value" id="profile-car-model-value"></span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="profile-section">
+                        <h3>Account Information</h3>
+                        <div class="info-grid">
+                            <div class="info-item">
+                                <span class="info-label">Member Since</span>
+                                <span class="info-value" id="profile-created-value"></span>
+                            </div>
+                            <div class="info-item">
+                                <span class="info-label">Last Updated</span>
+                                <span class="info-value" id="profile-updated-value"></span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="profile-section">
+                        <h3>About</h3>
+                        <div class="bio-section">
+                            <p id="profile-bio-value">No bio added yet</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="profile-actions">
+                    <button onclick="window.location.href='/settings'" class="edit-btn">Edit Profile</button>
+                    <button onclick="handleLogout()" class="logout-btn">Logout</button>
+                </div>
+
+                <p id="profile-message"></p>
+            </div>
+        </div>
+    </div>
+
+    <script src="/static/js/auth.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            checkAuthentication();
+            loadProfileData();
+        });
+
+        async function loadProfileData() {
+            try {
+                const res = await fetch('/profile');
+                const data = await res.json();
+                
+                if (res.ok) {
+                    // Header info
+                    document.getElementById('profile-main-photo').src = data.photo_url || '/static/images/default-profile.png';
+                    document.getElementById('profile-user-photo').src = data.photo_url || '/static/images/default-profile.png';
+                    document.getElementById('profile-top-username').textContent = data.username;
+                    document.getElementById('profile-display-username').textContent = data.username;
+                    document.getElementById('profile-display-email').textContent = data.email;
+                    document.getElementById('profile-display-bio').textContent = data.bio || 'No bio added yet';
+
+                    // Personal info
+                    document.getElementById('profile-username-value').textContent = data.username;
+                    document.getElementById('profile-email-value').textContent = data.email;
+                    document.getElementById('profile-phone-value').textContent = data.phone || 'Not provided';
+                    document.getElementById('profile-location-value').textContent = data.location || 'Not provided';
+
+                    // Vehicle info
+                    document.getElementById('profile-car-company-value').textContent = data.car_company || 'Not selected';
+                    document.getElementById('profile-car-model-value').textContent = data.car_model || 'Not selected';
+
+                    // Account info
+                    const createdDate = data.created_at ? new Date(data.created_at).toLocaleDateString() : 'Not available';
+                    const updatedDate = data.updated_at ? new Date(data.updated_at).toLocaleDateString() : 'Not available';
+                    document.getElementById('profile-created-value').textContent = createdDate;
+                    document.getElementById('profile-updated-value').textContent = updatedDate;
+
+                    // Bio
+                    document.getElementById('profile-bio-value').textContent = data.bio || 'No bio added yet';
+                } else {
+                    window.location.href = '/login';
+                }
+            } catch (error) {
+                console.error('Error loading profile:', error);
+                window.location.href = '/login';
+            }
+        }
+    </script>
+</body>
+</html>

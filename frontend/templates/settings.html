@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Settings - EV Range Prediction</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+    <link rel="stylesheet" href="/static/css/dashboard.css">
+</head>
+<body>
+    <div class="dashboard-container">
+        <nav class="sidebar">
+            <div class="sidebar-header">
+                <h2>EV Range</h2>
+            </div>
+            <ul class="sidebar-menu">
+                <li><a href="{{ url_for('ev.dashboard_page') }}">Dashboard</a></li>
+                <li><a href="{{ url_for('ev.profile_page') }}">Profile</a></li>
+                <li><a href="{{ url_for('ev.settings_page') }}" class="active">Settings</a></li>
+                <li><a href="{{ url_for('ev.map_page') }}">Navigation</a></li>
+                <li><a href="{{ url_for('ev.predict_page') }}">Prediction</a></li>
+                <li><a href="#" onclick="handleLogout()">Logout</a></li>
+            </ul>
+        </nav>
+
+        <div class="main-content">
+            <div class="top-bar">
+                <h1>Settings</h1>
+                <div class="user-menu">
+                    <img id="settings-user-photo" src="/static/images/default-profile.png" alt="Profile" class="user-avatar">
+                    <span id="settings-username"></span>
+                </div>
+            </div>
+
+            <div class="settings-container">
+                <div class="settings-section">
+                    <h2>Profile Settings</h2>
+                    
+                    <div class="form-group">
+                        <label>Profile Photo:</label>
+                        <div class="photo-upload">
+                            <img id="settings-profile-preview" src="/static/images/default-profile.png" alt="Preview" class="photo-preview">
+                            <input type="file" id="photo-upload" accept="image/*">
+                            <button onclick="document.getElementById('photo-upload').click()">Choose Photo</button>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Username:</label>
+                        <input type="text" id="settings-username-input" disabled>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Email:</label>
+                        <input type="email" id="settings-email">
+                    </div>
+
+                    <div class="form-group">
+                        <label>Phone:</label>
+                        <input type="tel" id="settings-phone" placeholder="Your phone number">
+                    </div>
+
+                    <div class="form-group">
+                        <label>Location:</label>
+                        <input type="text" id="settings-location" placeholder="Your location">
+                    </div>
+
+                    <div class="form-group">
+                        <label>Bio:</label>
+                        <textarea id="settings-bio" placeholder="Tell us about yourself"></textarea>
+                    </div>
+                </div>
+
+                <div class="settings-section">
+                    <h2>Vehicle Settings</h2>
+                    
+                    <div class="form-group">
+                        <label>Car Company:</label>
+                        <select id="settings-car-company">
+                            <option value="">Select a car company</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Car Model:</label>
+                        <select id="settings-car-model">
+                            <option value="">Select a car model</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="settings-section">
+                    <h2>Security Settings</h2>
+                    
+                    <div class="form-group">
+                        <label>Current Password:</label>
+                        <input type="password" id="settings-current-password" placeholder="Enter your current password">
+                    </div>
+
+                    <div class="form-group">
+                        <label>New Password:</label>
+                        <input type="password" id="settings-new-password" placeholder="Enter new password (leave blank to keep current)">
+                    </div>
+
+                    <div class="form-group">
+                        <label>Confirm Password:</label>
+                        <input type="password" id="settings-confirm-password" placeholder="Confirm new password">
+                    </div>
+                </div>
+
+                <button onclick="saveSettings()" class="save-btn">Save All Changes</button>
+                <p id="settings-message"></p>
+            </div>
+        </div>
+    </div>
+
+    <script src="/static/js/auth.js"></script>
+    <script src="/static/js/dashboard.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            checkAuthentication();
+            loadSettingsData();
+            loadCarCompanies();
+            
+            document.getElementById('settings-car-company').addEventListener('change', loadCarModels);
+            document.getElementById('photo-upload').addEventListener('change', handlePhotoPreview);
+        });
+    </script>
+</body>
+</html>
