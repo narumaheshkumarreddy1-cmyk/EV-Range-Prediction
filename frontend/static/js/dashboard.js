@@ -31,6 +31,12 @@ async function loadDashboardData() {
     }
 }
 
+// Quick access to recent driving simulation
+window.loadRecentPrediction = function() {
+    // Redirect to prediction page to start fresh simulation
+    window.location.href = '/predict';
+};
+
 // Settings functions
 async function loadSettingsData() {
     try {

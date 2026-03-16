@@ -14,6 +14,19 @@
 
 // Global simulation state
 var simulationInterval = null;
+var animationFrameId = null;
+var lastTime = 0;
+
+// Company-specific speed limits (km/h)
+const COMPANY_SPEED_LIMITS = {
+    'tesla': 200,
+    'hyundai': 180,
+    'tata': 140,
+    'mahindra': 150,
+    'mg': 160,
+    'default': 160
+};
+
 var simulationState = {
     battery: 0,
     predictedRange: 0,
@@ -582,14 +595,24 @@ function initSimulation(predictionData) {
     
     simulationState.predictedRange = simulationState.estimatedRange;
     simulationState.fullRange = parseFloat(predictionData.full_range_km) || simulationState.estimatedRange;
-    simulationState.baseSpeed = parseFloat(predictionData.speed) || 60;
-    simulationState.currentSpeed = simulationState.baseSpeed;
+    simulationState.baseSpeed = 0;
+    simulationState.currentSpeed = 0;
+    simulationState.rpm = 0;
+    simulationState.maxSpeed = COMPANY_SPEED_LIMITS[predictionData.company?.toLowerCase() || 'default'] || 160;
+    simulationState.speedNorm = 0;
+    simulationState.rpmNorm = 0;
+    simulationState.pedalPosition = 0; // -1 full accel (bottom/down), 0 neutral, +1 full brake (top/up)
+    simulationState.accelRate = 2.0;
+    simulationState.decelRate = 2.0;
+    simulationState.brakeForce = 6.0; // Matches requirements
+    simulationState.rpm = 0;
     simulationState.ac = Boolean(predictionData.ac);
     simulationState.traffic = String(predictionData.traffic || 'medium').toLowerCase();
     simulationState.vehicleLoad = parseFloat(predictionData.vehicle_load) || 0;
     simulationState.isRunning = true;
     simulationState.distanceTravelled = 0;
     simulationState.efficiencyStatus = 'Optimal';
+    simulationState.lastStepTime = Date.now();
     
     // Store destination
     simulationState.destination = predictionData.destination || '';
@@ -610,24 +633,379 @@ function initSimulation(predictionData) {
     // Update initial display
     updateSimulationDisplay();
 
-    // Start the simulation interval (every 30 seconds)
-    if (simulationInterval) {
-        clearInterval(simulationInterval);
+// Central dashboard update function per feedback #6
+function updateDashboard() {
+    // Gauges
+    updateSpeedometer(simulationState.currentSpeed);
+    updateRpmGauge(simulationState.rpm);
+    
+    // Digital displays
+    const digitalSpeed = document.getElementById('digital-speed');
+    if (digitalSpeed) digitalSpeed.textContent = Math.round(simulationState.currentSpeed);
+    
+    const digitalRpm = document.getElementById('digital-rpm');
+    if (digitalRpm) digitalRpm.textContent = simulationState.rpm.toLocaleString();
+    
+    // Left panel
+    const currentSpeedEl = document.getElementById('current-speed');
+    if (currentSpeedEl) {
+        currentSpeedEl.textContent = simulationState.currentSpeed.toFixed(1) + ' km/h';
+        currentSpeedEl.style.color = simulationState.efficiencyStatus === 'Optimal' ? '#28a745' : '#dc3545';
     }
     
-    simulationInterval = setInterval(runSimulationStep, 20000);
+    const distanceEl = document.getElementById('distanceTravelled');
+    if (distanceEl) distanceEl.textContent = simulationState.distanceTravelled.toFixed(2) + ' km';
     
-    // Update status message immediately
-    updateSimulationStatus('Simulation running (Updates every 20 seconds)');
-    
-    console.log('EV Live Adaptive Range simulation started:', simulationState);
-    
-    // Initialize geolocation and route calculation
-    if (simulationState.destination) {
-        initGeolocation();
+    // Battery
+    const batteryEl = document.getElementById('live-battery');
+    if (batteryEl) {
+        batteryEl.textContent = simulationState.battery.toFixed(1);
+        batteryEl.style.color = simulationState.battery > 30 ? '#28a745' : simulationState.battery > 10 ? '#ffc107' : '#dc3545';
     }
     
-    return true;
+    const rangeEl = document.getElementById('travelDistance');
+    if (rangeEl) rangeEl.textContent = simulationState.predictedRange.toFixed(1);
+    
+    const efficiencyEl = document.getElementById('efficiency-status');
+    if (efficiencyEl) efficiencyEl.textContent = simulationState.efficiencyStatus;
+    
+    const routeEl = document.getElementById('routeDistance');
+    if (routeEl && simulationState.routeCalculated) routeEl.textContent = simulationState.routeDistance.toFixed(1);
+    
+    const sufficiencyEl = document.getElementById('battery-sufficiency');
+    if (sufficiencyEl && simulationState.batterySufficient !== null) {
+        sufficiencyEl.innerHTML = simulationState.batterySufficient ? '✔ Sufficient' : '❌ Insufficient';
+        sufficiencyEl.style.color = simulationState.batterySufficient ? '#28a745' : '#dc3544';
+    }
+}
+
+// Speedometer update per feedback #2
+function updateSpeedometer(speed) {
+    const container = document.getElementById('speedometer');
+    if (!container) return;
+    
+    const norm = speed / 220;
+    const angle = norm * 270 - 135;
+    
+    let svg = container.querySelector('svg');
+    if (!svg) {
+        container.innerHTML = `
+            <svg viewBox="0 0 300 300">
+                <defs>
+                    <linearGradient id="speedGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                        <stop offset="0%" stop-color="#22c55e"/>
+                        <stop offset="0.4" stop-color="#fbbf24"/>
+                        <stop offset="1" stop-color="#ef4444"/>
+                    </linearGradient>
+                </defs>
+                <circle cx="150" cy="150" r="130" fill="none" stroke="#1e293b" stroke-width="20"/>
+                <circle cx="150" cy="150" r="130" fill="none" stroke="url(#speedGrad)" stroke-width="20" stroke-linecap="round" 
+                        pathLength="1" stroke-dasharray="816.8 816.8" id="speed-arc"/>
+                <g id="speedNeedle" transform="translate(150, 150) rotate(-135)">
+                    <rect x="-5" y="-120" width="10" height="120" fill="#ffffff" rx="5"/>
+                    <circle cx="0" cy="0" r="12" fill="#1e293b"/>
+                </g>
+            </svg>`;
+        svg = container.querySelector('svg');
+    }
+    
+    const arc = svg.querySelector('#speed-arc');
+    arc.style.strokeDashoffset = 1 - norm;
+    
+    const needle = svg.querySelector('#speedNeedle');
+    needle.style.transform = `translate(150, 150) rotate(${angle}deg)`;
+    
+    const speedDisplay = document.getElementById('digital-speed');
+    if (speedDisplay) speedDisplay.textContent = Math.round(speed);
+}
+
+// RPM gauge per feedback #3
+function updateRpmGauge(rpm) {
+    const container = document.getElementById('rpm-gauge');
+    if (!container) return;
+    
+    const norm = rpm / 8000;
+    const angle = norm * 270 - 135;
+    
+    let svg = container.querySelector('svg');
+    if (!svg) {
+        container.innerHTML = `
+            <svg viewBox="0 0 240 240">
+                <circle cx="120" cy="120" r="100" fill="none" stroke="#1e293b" stroke-width="15"/>
+                <circle cx="120" cy="120" r="100" fill="none" stroke="#ef4444" stroke-width="15" stroke-linecap="round" 
+                        pathLength="1" stroke-dasharray="628.3 628.3" id="rpm-arc"/>
+                <g id="rpmNeedle" transform="translate(120, 120) rotate(-135)">
+                    <rect x="-4" y="-90" width="8" height="90" fill="#ffffff" rx="4"/>
+                    <circle cx="0" cy="0" r="10" fill="#1e293b"/>
+                </g>
+            </svg>`;
+        svg = container.querySelector('svg');
+    }
+    
+    const arc = svg.querySelector('#rpm-arc');
+    arc.style.strokeDashoffset = 1 - norm;
+    
+    const needle = svg.querySelector('#rpmNeedle');
+    needle.style.transform = `translate(120, 120) rotate(${angle}deg)`;
+    
+    const rpmValue = document.getElementById('digital-rpm');
+    if (rpmValue) rpmValue.textContent = rpm.toLocaleString();
+}
+
+// 1s simulation loop per feedback #7
+simulationInterval = setInterval(() => {
+    runSimulationStep();
+    updateDashboard(); // Central call per feedback #6
+}, 1000);
+
+// Brake handler per feedback #5
+const brakeBtn = document.getElementById('brake-button');
+if (brakeBtn) {
+    brakeBtn.addEventListener('click', () => {
+        simulationState.currentSpeed -= 5; // Speed -= 5 per feedback
+        // Reset slider middle PAUSE
+        simulationState.pedalPosition = 0;
+        const slider = document.getElementById('pedal-slider');
+        const thumb = slider?.querySelector('.slider-thumb');
+        if (thumb) {
+            thumb.style.top = 'calc(50% - 30px)';
+        }
+        document.getElementById('pedal-indicator').textContent = 'Coasting';
+        updateBrakeButton();
+    });
+}
+
+setupPedalControls();
+
+// Always calculate route using Google → OSRM per feedback #1 (no hardcode)
+if (simulationState.destination) {
+    fetchRouteDistance();
+}
+
+updateSimulationStatus('✅ Professional EV Cluster Active - Drag/Brake!');
+
+}
+
+function setupPedalControls() {
+    const slider = document.getElementById('pedal-slider');
+    const thumb = slider?.querySelector('.slider-thumb');
+    const indicator = document.getElementById('pedal-indicator');
+    const speedLimitEl = document.getElementById('speed-limit-value');
+    
+    if (speedLimitEl) speedLimitEl.textContent = simulationState.maxSpeed;
+    
+    if (!slider || !thumb || !indicator) {
+        console.warn('Pedal controls missing');
+        return;
+    }
+    
+    let isDragging = false;
+    const trackHeight = slider.offsetHeight;
+    const thumbSize = 60;
+    
+    const updatePosition = (clientY) => {
+        const rect = slider.getBoundingClientRect();
+        let y = clientY - rect.top - thumbSize / 2;
+        y = Math.max(0, Math.min(trackHeight - thumbSize, y));
+        const normPos = (y / (trackHeight - thumbSize)) * 2 - 1; // -1=bottom accel, +1=top regen
+        simulationState.pedalPosition = normPos;
+        
+        thumb.style.top = y + 'px';
+        
+        let label, cls;
+        if (normPos < -0.1) { // DOWN accel
+            label = `Accel ${Math.round(-normPos * 100)}%`;
+            cls = 'accel';
+        } else if (normPos > 0.1) { // UP regen
+            label = `Regen ${Math.round(normPos * 100)}%`;
+            cls = 'regen';
+        } else {
+            label = 'Coasting';
+            cls = 'neutral';
+        }
+        indicator.textContent = label;
+        indicator.className = cls;
+        thumb.className = `slider-thumb ${cls} ${isDragging ? 'active' : ''}`;
+    };
+    
+    const handleStart = (e) => {
+        isDragging = true;
+        slider.style.cursor = 'grabbing';
+        const clientY = e.touches?.[0]?.clientY || e.clientY;
+        updatePosition(clientY);
+    };
+    
+    const handleMove = (e) => {
+        if (!isDragging) return;
+        e.preventDefault();
+        const clientY = e.touches?.[0]?.clientY || e.clientY;
+        updatePosition(clientY);
+    };
+    
+    const handleEnd = () => {
+        isDragging = false;
+        slider.style.cursor = 'grab';
+        thumb.classList.remove('active');
+    };
+    
+    ['pointerdown', 'touchstart'].forEach(ev => slider.addEventListener(ev, handleStart, {passive: false}));
+    document.addEventListener('pointermove', handleMove);
+    document.addEventListener('pointerup', handleEnd);
+    document.addEventListener('touchmove', handleMove, {passive: false});
+    document.addEventListener('touchend', handleEnd);
+    
+    // Neutral start
+    thumb.style.top = 'calc(50% - 30px)';
+    console.log('Accelerator slider ready: DOWN accel +2kmh/s, UP regen -2kmh/s');
+}
+
+function updateBrakeButton() {
+    const btn = document.getElementById('brake-button');
+    if (btn) {
+        btn.classList.toggle('active', simulationState.brakePressed);
+        btn.textContent = simulationState.brakePressed ? 'BRAKE (ON)' : 'BRAKE';
+    }
+}
+
+function updateDrivingSimulation(currentTime) {
+    if (!simulationState.isRunning) return;
+    
+// Removed dual RAF loop - single interval handles all
+    if (speedLimitEl) {
+        const speedNorm = simulationState.currentSpeed / simulationState.maxSpeed;
+        speedLimitEl.classList.toggle('warning', speedNorm > 0.9);
+    }
+    
+    // Continue loop
+    animationFrameId = requestAnimationFrame(updateDrivingSimulation);
+}
+
+function updateDrivingDisplays() {
+    // Digital speed
+    const digitalSpeed = document.getElementById('digital-speed');
+    if (digitalSpeed) {
+        digitalSpeed.textContent = Math.round(simulationState.currentSpeed);
+    }
+    
+    // Digital RPM
+    const digitalRpm = document.getElementById('digital-rpm');
+    if (digitalRpm) {
+        digitalRpm.textContent = simulationState.rpm.toLocaleString();
+    }
+    
+    // Update speedometer SVG (simple needle)
+    updateSpeedometer();
+    
+    // Update RPM gauge SVG
+    updateRpmGauge();
+    
+    // Update current-speed (left panel compatibility)
+    // Left panel current-speed (already there)
+    const currentSpeedEl = document.getElementById('current-speed');
+    if (currentSpeedEl) {
+        currentSpeedEl.textContent = simulationState.currentSpeed.toFixed(1) + ' km/h';
+        currentSpeedEl.style.color = simulationState.efficiencyStatus === 'Optimal' ? '#28a745' : simulationState.efficiencyStatus === 'High Consumption' ? '#dc3545' : '#667eea';
+    }
+    
+    // Update distance travelled
+    const distanceEl = document.getElementById('distanceTravelled');
+    if (distanceEl) {
+        distanceEl.textContent = simulationState.distanceTravelled.toFixed(1);
+    }
+    
+    // Update battery and range
+    const batteryEl = document.getElementById('live-battery');
+    if (batteryEl) {
+        batteryEl.textContent = simulationState.battery.toFixed(1);
+        batteryEl.style.color = simulationState.battery > 30 ? '#28a745' : simulationState.battery > 10 ? '#ffc107' : '#dc3545';
+    }
+    
+    const travelDistanceEl = document.getElementById('travelDistance');
+    if (travelDistanceEl) {
+        travelDistanceEl.textContent = simulationState.predictedRange.toFixed(1);
+    }
+    
+    const efficiencyEl = document.getElementById('efficiency-status');
+    if (efficiencyEl) {
+        efficiencyEl.textContent = simulationState.efficiencyStatus;
+    }
+}
+
+function updateSpeedometer() {
+    const container = document.getElementById('speedometer');
+    if (!container) return;
+    
+    // Smooth lerp for needle
+    const targetNorm = simulationState.currentSpeed / simulationState.maxSpeed;
+    simulationState.speedNorm = simulationState.speedNorm || 0;
+    simulationState.speedNorm = simulationState.speedNorm * 0.85 + targetNorm * 0.15;
+    const angle = (simulationState.speedNorm * 270 - 135) * Math.PI / 180;
+    
+    let svg = container.innerHTML ? container.querySelector('svg') : null;
+    if (!svg) {
+        container.innerHTML = `
+            <svg viewBox="0 0 220 220" style="transform: rotate(-90deg);">
+                <defs>
+                    <linearGradient id="speedGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                        <stop offset="0%" stop-color="#22c55e"/>
+                        <stop offset="50%" stop-color="#fbbf24"/>
+                        <stop offset="100%" stop-color="#ef4444"/>
+                    </linearGradient>
+                </defs>
+                <circle cx="110" cy="110" r="95" fill="none" stroke="#334155" stroke-width="15"/>
+                <circle cx="110" cy="110" r="95" fill="none" stroke="url(#speedGradient)" stroke-width="15" stroke-linecap="round" 
+                        pathLength="1" stroke-dasharray="595.2 595.2" id="speed-arc"/>
+                <g transform="translate(110, 110)">
+                    <line x1="0" y1="-80" x2="0" y2="-95" stroke="#ffffff" stroke-width="4" stroke-linecap="round" stroke-shadow="0 0 10px #00ff88"/>
+                </g>
+            </svg>
+        `;
+        svg = container.querySelector('svg');
+    }
+    
+    const arc = svg.querySelector('#speed-arc');
+    arc.style.strokeDashoffset = 1 - simulationState.speedNorm;
+    
+    const needle = svg.querySelector('line');
+    needle.style.transform = `rotate(${angle}rad)`;
+}
+
+function updateRpmGauge() {
+    const container = document.getElementById('rpm-gauge');
+    if (!container) return;
+    
+    const maxRpm = simulationState.maxSpeed * 40;
+    const targetRpmNorm = simulationState.rpm / maxRpm;
+    simulationState.rpmNorm = simulationState.rpmNorm || 0;
+    simulationState.rpmNorm = simulationState.rpmNorm * 0.85 + targetRpmNorm * 0.15;
+    const angle = (simulationState.rpmNorm * 270 - 135) * Math.PI / 180;
+    
+    let svg = container.innerHTML ? container.querySelector('svg') : null;
+    if (!svg) {
+        container.innerHTML = `
+            <svg viewBox="0 0 160 160" style="transform: rotate(-90deg);">
+                <circle cx="80" cy="80" r="70" fill="none" stroke="#475569" stroke-width="12"/>
+                <circle cx="80" cy="80" r="70" fill="none" stroke="#ef4444" stroke-width="12" stroke-linecap="round" 
+                        pathLength="1" stroke-dasharray="439.6 439.6" id="rpm-arc"/>
+                <g transform="translate(80, 80)">
+                    <line x1="0" y1="-60" x2="0" y2="-70" stroke="#ffffff" stroke-width="3" stroke-linecap="round"/>
+                </g>
+            </svg>
+        `;
+        svg = container.querySelector('svg');
+    }
+    
+    const arc = svg.querySelector('#rpm-arc');
+    arc.style.strokeDashoffset = 1 - simulationState.rpmNorm;
+    
+    const needle = svg.querySelector('line');
+    needle.style.transform = `rotate(${angle}rad)`;
+}
+
+// Update existing updateSimulationDisplay to call new functions
+function updateSimulationDisplay() {
+    // Existing code...
+    updateDrivingDisplays();
 }
 
 /**
@@ -731,40 +1109,54 @@ function fetchRouteDistance() {
         return;
     }
     
-    var osrmUrl = 'https://router.project-osrm.org/route/v1/driving/' + 
-                  simulationState.currentLng + ',' + simulationState.currentLat + ';' + 
-                  simulationState.destinationLng + ',' + simulationState.destinationLat + 
-                  '?overview=false';
-    
-    console.log('Fetching route from OSRM:', osrmUrl);
-    
-    fetch(osrmUrl)
-        .then(response => response.json())
-        .then(data => {
-            if (data.code === 'Ok' && data.routes && data.routes.length > 0) {
-                // Distance is in meters, convert to km
-                simulationState.routeDistance = data.routes[0].distance / 1000;
+    // Try Google Maps Directions API first
+    if (typeof google !== 'undefined' && google.maps) {
+        const directionsService = new google.maps.DirectionsService();
+        const request = {
+            origin: new google.maps.LatLng(simulationState.currentLat, simulationState.currentLng),
+            destination: new google.maps.LatLng(simulationState.destinationLat, simulationState.destinationLng),
+            travelMode: google.maps.TravelMode.DRIVING
+        };
+        
+        directionsService.route(request, (response, status) => {
+            if (status === 'OK') {
+                const distanceKm = response.routes[0].legs[0].distance.value / 1000;
+                simulationState.routeDistance = distanceKm;
                 simulationState.routeCalculated = true;
-                
-                console.log('Route distance:', simulationState.routeDistance.toFixed(2), 'km');
-                
-                // Update display with route distance
                 updateBatterySufficiency();
                 updateSimulationDisplay();
-                
-                updateSimulationStatus('Route calculated: ' + simulationState.routeDistance.toFixed(1) + ' km');
-                
-                // Fetch charging stations along the route
+                updateSimulationStatus('Google Maps route: ' + distanceKm.toFixed(1) + ' km');
                 fetchChargingStationsAlongRoute();
             } else {
-                console.warn('Could not get route from OSRM');
-                updateSimulationStatus('Could not calculate route. Please try again.');
+                console.warn('Google Directions failed:', status);
+                fallbackOSRM();
             }
-        })
-        .catch(error => {
-            console.error('OSRM API error:', error);
-            updateSimulationStatus('Error fetching route. Please try again.');
         });
+    } else {
+        fallbackOSRM();
+    }
+    
+    function fallbackOSRM() {
+        const osrmUrl = 'https://router.project-osrm.org/route/v1/driving/' + 
+                        simulationState.currentLng + ',' + simulationState.currentLat + ';' + 
+                        simulationState.destinationLng + ',' + simulationState.destinationLat + 
+                        '?overview=false';
+        fetch(osrmUrl)
+            .then(response => response.json())
+            .then(data => {
+                if (data.code === 'Ok' && data.routes && data.routes.length > 0) {
+                    simulationState.routeDistance = data.routes[0].distance / 1000;
+                    simulationState.routeCalculated = true;
+                    updateBatterySufficiency();
+                    updateSimulationDisplay();
+                    updateSimulationStatus('OSRM route: ' + simulationState.routeDistance.toFixed(1) + ' km');
+                    fetchChargingStationsAlongRoute();
+                } else {
+                    updateSimulationStatus('Using demo route distance');
+                }
+            })
+            .catch(() => updateSimulationStatus('Using demo route distance'));
+    }
 }
 
 /**
@@ -790,17 +1182,7 @@ function updateBatterySufficiency() {
     console.log('Difference:', simulationState.difference.toFixed(2), 'km');
 }
 
-/**
- * Generate dynamic speed with fluctuation (±10 variation from base speed)
- * Speed is clamped between 20 and 120 km/h
- */
-function calculateDynamicSpeed() {
-    var variation = (Math.random() * 20) - 10;
-    var newSpeed = simulationState.baseSpeed + variation;
-    // Clamp speed between 20 and 120 km/h
-    newSpeed = Math.max(20, Math.min(newSpeed, 120));
-    return newSpeed;
-}
+/* Removed artificial speed clamp - now pure pedal physics */
 
 /**
  * Determine efficiency status for display
@@ -827,13 +1209,59 @@ function runSimulationStep() {
         return;
     }
 
-    // Step 1: Generate dynamic speed with fluctuation
-    simulationState.currentSpeed = calculateDynamicSpeed();
-    var currentSpeed = simulationState.currentSpeed;
+// 1. SPEED UPDATE (1s physics) - FIXED per feedback
+    let speedChange = 0;
     
-    console.log('Dynamic Speed: ' + currentSpeed.toFixed(1) + ' km/h');
+    // Slider % logic: top>60% decrease2, 40-60% PAUSE maintain, bottom<40% increase2 (feedback)
+    const sliderPercent = (1 - simulationState.pedalPosition) * 50; // pedal -1(bottom)=0%, +1(top)=100%
+    if (sliderPercent < 40) {
+        // Bottom increase/accel +2kmh/s
+        speedChange = 2;
+        simulationState.currentSpeed += speedChange;
+    } else if (sliderPercent > 60) {
+        // Top decrease/regen -2kmh/s  
+        speedChange = -2;
+        simulationState.currentSpeed += speedChange;
+    } else {
+        // Middle 40-60% PAUSE - maintain speed (no drag/change)
+    }
     
-    // Step 2: Calculate efficiency factor for display purposes only
+    // Brake button -5kmh/s + reset slider to middle when pressed
+    if (simulationState.brakePressed) {
+        simulationState.currentSpeed -= 5;
+        // Reset slider to middle PAUSE
+        simulationState.pedalPosition = 0;
+        const slider = document.getElementById('pedal-slider');
+        const thumb = slider?.querySelector('.slider-thumb');
+        if (thumb) {
+            const trackHeight = slider.offsetHeight;
+            const thumbSize = 60;
+            const middleY = (trackHeight - thumbSize) / 2;
+            thumb.style.top = middleY + 'px';
+        }
+        const indicator = document.getElementById('pedal-indicator');
+        if (indicator) {
+            indicator.textContent = 'Coasting';
+            indicator.className = 'neutral';
+        }
+    }
+    
+    // Clamp 0-max
+    simulationState.currentSpeed = Math.max(0, Math.min(simulationState.currentSpeed, simulationState.maxSpeed));
+    
+    const currentSpeed = simulationState.currentSpeed;
+    
+    // 2. DISTANCE exact: speed/3600 per second
+    const distanceStep = currentSpeed / 3600;
+    simulationState.distanceTravelled += distanceStep;
+    
+    // 3. RPM = speed * 40 clamp 0-maxRpm
+    const maxRpm = simulationState.maxSpeed * 40;
+    simulationState.rpm = Math.round(currentSpeed * 40);
+    simulationState.rpm = Math.min(simulationState.rpm, maxRpm);
+    
+    // 4. Efficiency (display only)
+
     // Efficiency affects speed perception, NOT the final range calculation
     var efficiencyFactor = 1;
 
@@ -871,22 +1299,18 @@ function runSimulationStep() {
     
     console.log('km per 1% battery: ' + kmPerPercent.toFixed(2) + ' km');
     
-    // Step 4: Calculate distance travelled in this interval (30 seconds)
-    // intervalSeconds = 30, convert hours: 30/3600
-    var intervalSeconds = 30;
-    var distanceStep = currentSpeed * (intervalSeconds / 3600);
-    
-    console.log('Distance travelled in this interval: ' + distanceStep.toFixed(2) + ' km');
+    // REMOVED DUPLICATE distanceStep - now pure fixed 1s timestep above
+    simulationState.lastStepTime = Date.now();
     
     // Step 5: Calculate battery drop based on distance travelled
     // batteryDrop = distanceStep / kmPerPercent
     // This ensures: if 1% battery gives 4km, then 4km travelled = 1% battery drop
+    // Fixed timestep distanceStep used for battery
     var batteryDrop = distanceStep / kmPerPercent;
     
     console.log('Battery drop: ' + batteryDrop.toFixed(4) + '%');
     
-    // Step 6: Update distance travelled (cumulative)
-    simulationState.distanceTravelled += distanceStep;
+    // Distance already updated in fixed timestep above
     
     console.log('Total distance travelled: ' + simulationState.distanceTravelled.toFixed(2) + ' km');
     
@@ -1052,30 +1476,20 @@ function updateSimulationDisplay() {
         travelDistanceEl.textContent = simulationState.predictedRange.toFixed(1);
     }
     
-    // Update route distance display
-    var routeDistanceEl = document.getElementById('routeDistance');
-    if (routeDistanceEl) {
-        if (simulationState.routeCalculated) {
-            routeDistanceEl.textContent = simulationState.routeDistance.toFixed(1);
-        } else {
-            routeDistanceEl.textContent = '--';
+    // RESPECT route-calculator-fixed.js values - DO NOT OVERWRITE
+    // Route Distance & Battery Status managed by route-calculator-fixed.js
+    // Only update if route-calculator hasn't set them (check window globals)
+    if (typeof window.routeDistanceValue !== 'undefined' && window.routeDistanceValue !== null) {
+        var routeDistanceEl = document.getElementById('routeDistance');
+        if (routeDistanceEl) {
+            routeDistanceEl.textContent = window.routeDistanceValue.toFixed(1) + ' km';
         }
     }
     
-    // Update battery sufficiency status
-    var sufficiencyEl = document.getElementById('battery-sufficiency');
-    if (sufficiencyEl) {
-        if (simulationState.routeCalculated && simulationState.batterySufficient !== null) {
-            if (simulationState.batterySufficient) {
-                sufficiencyEl.innerHTML = '✔ Battery Sufficient';
-                sufficiencyEl.style.color = '#28a745';
-            } else {
-                sufficiencyEl.innerHTML = '❌ Battery Insufficient';
-                sufficiencyEl.style.color = '#dc3545';
-            }
-        } else {
-            sufficiencyEl.textContent = '--';
-            sufficiencyEl.style.color = '#666';
+    if (typeof window.batteryStatusValue !== 'undefined' && window.batteryStatusValue !== null) {
+        var batteryStatusEl = document.getElementById('battery-sufficiency');
+        if (batteryStatusEl) {
+            batteryStatusEl.innerText = window.batteryStatusValue;
         }
     }
     

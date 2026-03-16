@@ -839,6 +839,230 @@ html.map-page {
     }
 }
 
+/* Professional EV Driving Cluster Styles */
+
+/* Real EV Dark Dashboard Theme */
+.simulation-right {
+  background: #0f172a !important;
+}
+
+.driving-cluster {
+  display: flex !important;
+  flex-direction: column !important;
+  justify-content: center !important;
+  align-items: center !important;
+  gap: 35px !important;
+  padding: 35px !important;
+  max-width: 550px;
+}
+
+/* Speedometer - Real Dashboard Style */
+#speedometer-container {
+  position: relative !important;
+  text-align: center;
+}
+
+#speedometer {
+  filter: drop-shadow(0 20px 40px rgba(0,0,0,0.5)) !important;
+  transition: all 0.8s cubic-bezier(0.25,0.46,0.45,0.94) !important;
+}
+
+.speed-zone {
+  position: absolute !important;
+  font-weight: 700 !important;
+  font-size: 14px !important;
+  color: #f1f5f9 !important;
+  text-shadow: 1px 1px 4px rgba(0,0,0,0.9) !important;
+  font-family: -apple-system, BlinkMacSystemFont, sans-serif !important;
+  z-index: 10;
+}
+
+.speed-zone.green { top: 50% !important; left: 5% !important; transform: translateY(-50%); color: #22c55e !important; }
+.speed-zone.yellow { top: 10% !important; left: 35% !important; color: #fbbf24 !important; }
+.speed-zone.red { top: 50% !important; right: 5% !important; transform: translateY(-50%); color: #ef4444 !important; }
+
+#digital-speed {
+  position: absolute !important;
+  top: 50% !important;
+  left: 50% !important;
+  transform: translate(-50%, -50%) !important;
+  font-size: 65px !important;
+  font-weight: 900 !important;
+  color: #00ff88 !important;
+  text-shadow: 0 0 25px #00ff88, 0 0 35px #00ff88 !important;
+  z-index: 20 !important;
+  transition: all 0.5s cubic-bezier(0.25,0.46,0.45,0.94);
+  font-family: 'SF Pro Display', -apple-system, sans-serif !important;
+}
+
+#digital-speed.warning {
+  color: #ef4444 !important;
+  text-shadow: 0 0 25px #ef4444, 0 0 45px #ef4444 !important;
+}
+
+/* RPM Gauge */
+#rpm-container { margin-top: 25px !important; }
+#rpm-gauge {
+  filter: drop-shadow(0 15px 35px rgba(239,68,68,0.6)) !important;
+}
+
+#digital-rpm {
+  text-align: center !important;
+  font-size: 45px !important;
+  color: #ef4444 !important;
+  font-weight: 800 !important;
+  text-shadow: 0 0 20px #ef4444 !important;
+  margin-top: 8px !important;
+  transition: all 0.5s ease !important;
+}
+
+#digital-rpm.redline {
+  color: #dc2626 !important;
+  text-shadow: 0 0 30px #dc2626, 0 0 50px #dc2626 !important;
+}
+
+/* Speed Limit Professional Card */
+#speed-limit {
+  text-align: center !important;
+  margin: 30px 0 !important;
+  padding: 25px !important;
+  background: linear-gradient(145deg, #1e293b, #334155) !important;
+  border-radius: 20px !important;
+  border: 2px solid #475569 !important;
+  box-shadow: 0 12px 35px rgba(0,0,0,0.4) !important;
+  backdrop-filter: blur(15px) !important;
+}
+
+#speed-limit div:first-child {
+  font-size: 15px !important;
+  color: #fbbf24 !important;
+  font-weight: 700 !important;
+  margin-bottom: 8px !important;
+  text-transform: uppercase !important;
+  letter-spacing: 1px;
+}
+
+#speed-limit-value {
+  font-size: 42px !important;
+  font-weight: 900 !important;
+  color: #3b82f6 !important;
+  text-shadow: 0 0 15px rgba(59,130,246,0.8) !important;
+  margin-bottom: 5px;
+}
+
+#speed-limit div:last-child {
+  font-size: 14px !important;
+  color: #94a3b8 !important;
+  font-weight: 500 !important;
+}
+
+#speed-limit.warning {
+  background: linear-gradient(145deg, #1f1b1b, #2d1a1a) !important;
+  border-color: #ef4444 !important;
+  box-shadow: 0 0 30px rgba(239,68,68,0.5) !important;
+  animation: warningPulse 1s infinite !important;
+}
+
+@keyframes warningPulse {
+  0%, 100% { transform: scale(1); box-shadow: 0 12px 35px rgba(0,0,0,0.4); }
+  50% { transform: scale(1.02); box-shadow: 0 0 35px rgba(239,68,68,0.6); }
+}
+
+/* Controls - Professional */
+.pedal-slider {
+  touch-action: none !important;
+  user-select: none !important;
+}
+
+.slider-thumb {
+  transition: all 0.25s cubic-bezier(0.4,0,0.2,1) !important;
+}
+
+.slider-thumb.active {
+  transform: scale(1.12) !important;
+  box-shadow: 0 18px 45px rgba(0,0,0,0.6), 0 0 40px rgba(34,197,94,0.9) !important;
+}
+
+.slider-thumb.accel, .slider-thumb.regen {
+  border: 4px solid #22c55e !important;
+  box-shadow: 0 0 35px rgba(34,197,94,0.9) !important;
+}
+
+#pedal-indicator {
+  transition: all 0.35s ease !important;
+  font-family: -apple-system, BlinkMacSystemFont, sans-serif !important;
+  text-shadow: 0 1px 3px rgba(0,0,0,0.5);
+}
+
+#pedal-indicator.accel { color: #22c55e !important; }
+#pedal-indicator.regen { color: #3b82f6 !important; }
+#pedal-indicator.neutral { color: #94a3b8 !important; }
+
+/* Brake Button */
+#brake-button {
+  width: 85px !important;
+  height: 85px !important;
+  border: none !important;
+  border-radius: 50% !important;
+  background: linear-gradient(145deg, #ef4444, #dc2626) !important;
+  box-shadow: 0 10px 30px rgba(239,68,68,0.5), inset 0 4px 8px rgba(255,255,255,0.25) !important;
+  color: white !important;
+  font-size: 18px !important;
+  font-weight: 800 !important;
+  cursor: pointer !important;
+  transition: all 0.25s cubic-bezier(0.4,0,0.2,1) !important;
+  position: relative !important;
+  overflow: hidden !important;
+  text-transform: uppercase !important;
+  letter-spacing: 1px;
+}
+
+#brake-button:hover {
+  transform: translateY(-3px) !important;
+  box-shadow: 0 15px 40px rgba(239,68,68,0.6) !important;
+}
+
+#brake-button.active {
+  background: linear-gradient(145deg, #dc2626, #b91c1c) !important;
+  box-shadow: 0 0 35px rgba(239,68,68,0.8), inset 0 2px 4px rgba(255,255,255,0.1) !important;
+  animation: brakeActive 1s infinite !important;
+}
+
+@keyframes brakeActive {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+}
+
+/* Mobile Responsive */
+@media (max-width: 768px) {
+  .driving-cluster { 
+    gap: 28px !important; 
+    padding: 25px !important; 
+  }
+  
+  #speedometer { 
+    width: 260px !important; 
+    height: 260px !important; 
+  }
+  #rpm-gauge { 
+    width: 200px !important; 
+    height: 200px !important; 
+  }
+  #digital-speed { font-size: 50px !important; }
+  
+  .controls-row {
+    flex-direction: column !important;
+    gap: 25px !important;
+  }
+  
+  #pedal-slider, #brake-button { width: 75px !important; height: 75px !important; }
+}
+
+/* Typography */
+#digital-speed, #digital-rpm, #speed-limit-value {
+  font-family: 'SF Pro Display', -apple-system, BlinkMacSystemFont, sans-serif !important;
+}
+
 /* Mobile responsive for dashboard pages */
 @media (max-width: 1024px) {
     .sidebar {

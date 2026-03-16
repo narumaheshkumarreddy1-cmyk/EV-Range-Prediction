@@ -31,8 +31,8 @@
             </div>
 
             <div class="dashboard-grid">
-                <div class="card" onclick="window.location.href='/predict-page'">
-                    <h3>Prediction</h3>
+                <div class="card" onclick="window.location.href='{{ url_for('ev.predict_page') }}'">
+                    <h3>⚡ Prediction</h3>
                     <p>Make EV range predictions</p>
                 </div>
                 <div class="card" onclick="window.location.href='/map'">

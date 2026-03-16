@@ -133,11 +133,23 @@ def get_stations():
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
-@ev.route('/predict', methods=['POST'])
+@ev.route('/predict', methods=['GET', 'POST'])
 def predict():
     # Check authentication - require user to be logged in
     if 'user_id' not in session or 'car_company' not in session:
         return redirect('/login')
+
+    if request.method == 'GET':
+        # Default demo data for GET request (direct navigation)
+        prediction_data = {
+            "battery": 80,
+            "predicted_range_km": 400,
+            "full_range_km": 500,
+            "destination": "Yerragondapalem",
+            "company": session.get('car_company', 'hyundai')
+        }
+        return render_template('result.html', prediction=prediction_data)
+
 
     print("Predict route called")
     print("Form data:", request.form)
@@ -159,14 +171,13 @@ def predict():
     vehicle_load = float(request.form.get('load', 0))
     ac = request.form.get('ac') == 'on'
     traffic = request.form.get('traffic', 'medium')
-    speed = float(request.form.get('speed', 60))
     destination = request.form.get('destination', '')
     
     # Use default temperature if not provided (model requires it)
     # Default to 20°C (room temperature - ideal conditions)
     temperature = float(request.form.get('temperature', 20))
 
-    print(f"Parsed data: company={company}, battery={battery}, load={vehicle_load}, ac={ac}, traffic={traffic}, speed={speed}, temperature={temperature}, car_model={car_model}")
+    print(f"Parsed data: company={company}, battery={battery}, load={vehicle_load}, ac={ac}, traffic={traffic}, temperature={temperature}, car_model={car_model}")
 
     # Get company-specific full range
     full_range = COMPANY_RANGES[company]
@@ -185,8 +196,8 @@ def predict():
     if model is not None:  # This is the ML model loaded at module level
         try:
             # Prepare features for the model in the correct order
-            # Features: battery_percent, speed, ac_usage, traffic_numeric, vehicle_load, temperature
-            features = [[battery, speed, ac_numeric, traffic_numeric, vehicle_load, temperature]]
+            # Features: battery_percent, ac_usage, traffic_numeric, vehicle_load, temperature (removed speed)
+            features = [[battery, ac_numeric, traffic_numeric, vehicle_load, temperature]]
             
             # Get prediction from ML model
             predicted_range = model.predict(features)[0]
@@ -211,7 +222,6 @@ def predict():
     # Store data in session with all required fields
     session['prediction_data'] = {
         "battery": battery,
-        "speed": speed,
         "ac": ac,
         "traffic": traffic,
         "vehicle_load": vehicle_load,
