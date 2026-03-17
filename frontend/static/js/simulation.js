@@ -19,6 +19,7 @@ var lastTime = 0;
 
 // Company-specific speed limits (km/h)
 const MAX_SPEED = 160;
+const MAX_RPM = 8000;
 const COMPANY_SPEED_LIMITS = {
     'tesla': 200,
     'hyundai': 180,
@@ -575,8 +576,30 @@ window.navigateToStation = navigateToStation;
  * @param {Object} predictionData - Data from session prediction_data
  */
 function initSimulation(predictionData) {
+    console.log('initSimulation called with data:', predictionData);
+    
+    // Use demo data if no prediction provided (auto-start dashboard)
     if (!predictionData) {
-        console.error('No prediction data available for simulation');
+        predictionData = {
+            battery: 85,
+            estimated_range_km: 320,
+            full_range_km: 380,
+            company: 'tesla',
+            ac: false,
+            traffic: 'medium',
+            vehicle_load: 75,
+            destination: 'Office'
+        };
+        console.log('Using demo prediction data for dashboard simulation');
+    }
+
+    // Show simulation UI first
+    const container = document.getElementById('simulation-container');
+    if (container) {
+        container.style.display = 'flex';
+        console.log('Simulation container shown');
+    } else {
+        console.error('Simulation container not found!');
         return false;
     }
 

@@ -52,11 +52,43 @@
                     <p>Sign out of your account</p>
                 </div>
             </div>
+
+            <!-- EV Driving Simulation Cluster -->
+            <div id="simulation-container" class="driving-cluster" style="display: none; margin-top: 40px;">
+                <div id="speedometer-container">
+                    <div id="speedometer"></div>
+                    <div id="digital-speed">0</div>
+                </div>
+
+                <div id="rpm-container">
+                    <div id="rpm-gauge"></div>
+                    <div id="digital-rpm">0</div>
+                </div>
+
+                <div id="speed-limit">
+                    <div>SPEED LIMIT</div>
+                    <div id="speed-limit-value">160</div>
+                    <div>km/h</div>
+                </div>
+
+                <div class="controls-row" style="display: flex; gap: 30px; align-items: center; justify-content: center;">
+                    <div class="pedal-control">
+                        <div id="pedal-slider" class="pedal-slider">
+                            <div class="slider-thumb"></div>
+                        </div>
+                        <div id="pedal-indicator" class="neutral">Coasting</div>
+                    </div>
+                    <button id="brake-button">BRAKE</button>
+                </div>
+
+                <div id="simulation-status" style="text-align: center; color: #94a3b8; font-size: 14px;"></div>
+            </div>
         </div>
     </div>
 
     <script src="/static/js/auth.js"></script>
     <script src="/static/js/dashboard.js"></script>
+    <script src="/static/js/simulation.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             checkAuthentication();

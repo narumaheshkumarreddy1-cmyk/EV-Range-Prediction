@@ -29,6 +29,12 @@ async function loadDashboardData() {
     } catch (error) {
         console.error('Error loading dashboard:', error);
     }
+
+    // Auto-start EV dashboard simulation
+    if (typeof window.initSimulation === 'function') {
+        window.initSimulation();
+        console.log('EV Dashboard simulation started');
+    }
 }
 
 // Quick access to recent driving simulation
