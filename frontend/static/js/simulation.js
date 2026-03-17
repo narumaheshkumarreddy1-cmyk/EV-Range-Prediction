@@ -18,13 +18,14 @@ var animationFrameId = null;
 var lastTime = 0;
 
 // Company-specific speed limits (km/h)
+const MAX_SPEED = 160;
 const COMPANY_SPEED_LIMITS = {
     'tesla': 200,
     'hyundai': 180,
     'tata': 140,
     'mahindra': 150,
     'mg': 160,
-    'default': 160
+    'default': MAX_SPEED
 };
 
 var simulationState = {
@@ -684,7 +685,7 @@ function updateSpeedometer(speed) {
     const container = document.getElementById('speedometer');
     if (!container) return;
     
-    const norm = speed / 220;
+    const norm = speed / MAX_SPEED;
     const angle = norm * 270 - 135;
     
     let svg = container.querySelector('svg');
@@ -701,11 +702,35 @@ function updateSpeedometer(speed) {
                 <circle cx="150" cy="150" r="130" fill="none" stroke="#1e293b" stroke-width="20"/>
                 <circle cx="150" cy="150" r="130" fill="none" stroke="url(#speedGrad)" stroke-width="20" stroke-linecap="round" 
                         pathLength="1" stroke-dasharray="816.8 816.8" id="speed-arc"/>
+                
+                <!-- Speedometer Ticks -->
+                <g class="ticks-major" stroke="#94a3b8" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M 0,-125 L 0,-140" transform="translate(150,150) rotate(-135)"/><!-- 0 -->
+                  <path d="M 0,-125 L 0,-140" transform="translate(150,150) rotate(-97.5)"/><!-- 20 -->
+                  <path d="M 0,-125 L 0,-140" transform="translate(150,150) rotate(-60)"/><!-- 40 -->
+                  <path d="M 0,-125 L 0,-140" transform="translate(150,150) rotate(-22.5)"/><!-- 60 -->
+                  <path d="M 0,-125 L 0,-140" transform="translate(150,150) rotate(15)"/><!-- 80 -->
+                  <path d="M 0,-125 L 0,-140" transform="translate(150,150) rotate(52.5)"/><!-- 100 -->
+                  <path d="M 0,-125 L 0,-140" transform="translate(150,150) rotate(90)"/><!-- 120 -->
+                  <path d="M 0,-125 L 0,-140" transform="translate(150,150) rotate(127.5)"/><!-- 140 -->
+                  <path d="M 0,-125 L 0,-140" transform="translate(150,150) rotate(165)"/><!-- 160 -->
+                </g>
+                <g class="ticks-minor" stroke="#64748b" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M 0,-125 L 0,-135" transform="translate(150,150) rotate(-116.25)"/>
+                  <path d="M 0,-125 L 0,-135" transform="translate(150,150) rotate(-78.75)"/>
+                  <path d="M 0,-125 L 0,-135" transform="translate(150,150) rotate(-41.25)"/>
+                  <path d="M 0,-125 L 0,-135" transform="translate(150,150) rotate(3.75)"/>
+                  <path d="M 0,-125 L 0,-135" transform="translate(150,150) rotate(41.25)"/>
+                  <path d="M 0,-125 L 0,-135" transform="translate(150,150) rotate(78.75)"/>
+                  <path d="M 0,-125 L 0,-135" transform="translate(150,150) rotate(116.25)"/>
+                  <path d="M 0,-125 L 0,-135" transform="translate(150,150) rotate(153.75)"/>
+                </g>
+                
                 <g id="speedNeedle" transform="translate(150, 150) rotate(-135)">
                     <rect x="-5" y="-120" width="10" height="120" fill="#ffffff" rx="5"/>
                     <circle cx="0" cy="0" r="12" fill="#1e293b"/>
                 </g>
-            </svg>`;
+            </svg>
         svg = container.querySelector('svg');
     }
     
@@ -724,7 +749,8 @@ function updateRpmGauge(rpm) {
     const container = document.getElementById('rpm-gauge');
     if (!container) return;
     
-    const norm = rpm / 8000;
+    const MAX_RPM = MAX_SPEED * 40;
+    const norm = rpm / MAX_RPM;
     const angle = norm * 270 - 135;
     
     let svg = container.querySelector('svg');
@@ -734,11 +760,29 @@ function updateRpmGauge(rpm) {
                 <circle cx="120" cy="120" r="100" fill="none" stroke="#1e293b" stroke-width="15"/>
                 <circle cx="120" cy="120" r="100" fill="none" stroke="#ef4444" stroke-width="15" stroke-linecap="round" 
                         pathLength="1" stroke-dasharray="628.3 628.3" id="rpm-arc"/>
+                
+                <!-- RPM Gauge Ticks -->
+                <g class="ticks-major-rpm" stroke="#94a3b8" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M 0,-95 L 0,-108" transform="translate(120,120) rotate(-135)"/><!-- 0 -->
+                  <path d="M 0,-95 L 0,-108" transform="translate(120,120) rotate(-81)"/><!-- 1600 -->
+                  <path d="M 0,-95 L 0,-108" transform="translate(120,120) rotate(-27)"/><!-- 3200 -->
+                  <path d="M 0,-95 L 0,-108" transform="translate(120,120) rotate(27)"/><!-- 4800 -->
+                  <path d="M 0,-95 L 0,-108" transform="translate(120,120) rotate(81)"/><!-- 6400 -->
+                  <path d="M 0,-95 L 0,-108" transform="translate(120,120) rotate(135)"/><!-- 8000 -->
+                </g>
+                <g class="ticks-minor-rpm" stroke="#64748b" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M 0,-95 L 0,-102" transform="translate(120,120) rotate(-108)"/><!-- 800 -->
+                  <path d="M 0,-95 L 0,-102" transform="translate(120,120) rotate(-54)"/><!-- 2400 -->
+                  <path d="M 0,-95 L 0,-102" transform="translate(120,120) rotate(0)"/><!-- 4000 -->
+                  <path d="M 0,-95 L 0,-102" transform="translate(120,120) rotate(54)"/><!-- 5600 -->
+                  <path d="M 0,-95 L 0,-102" transform="translate(120,120) rotate(108)"/><!-- 7200 -->
+                </g>
+                
                 <g id="rpmNeedle" transform="translate(120, 120) rotate(-135)">
                     <rect x="-4" y="-90" width="8" height="90" fill="#ffffff" rx="4"/>
                     <circle cx="0" cy="0" r="10" fill="#1e293b"/>
                 </g>
-            </svg>`;
+            </svg>
         svg = container.querySelector('svg');
     }
     
