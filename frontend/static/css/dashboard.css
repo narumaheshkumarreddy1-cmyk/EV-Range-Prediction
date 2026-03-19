@@ -991,7 +991,12 @@ html.map-page {
 }
 
 .slider-thumb {
-  transition: all 0.25s cubic-bezier(0.4,0,0.2,1) !important;
+  position: absolute;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 40px;
+  height: 40px;
+  transition: top 0.05s linear;
 }
 
 .slider-thumb.active {
@@ -1077,6 +1082,12 @@ html.map-page {
 /* Typography */
 #digital-speed, #digital-rpm, #speed-limit-value {
   font-family: 'SF Pro Display', -apple-system, BlinkMacSystemFont, sans-serif !important;
+}
+
+/* Hide simulation on dashboard page ONLY */
+.dashboard-page #simulation-container,
+.dashboard-page .driving-cluster {
+  display: none !important;
 }
 
 /* Mobile responsive for dashboard pages */
@@ -1276,6 +1287,37 @@ html.map-page {
     padding: 20px;
     border-radius: 10px;
     box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
+}
+
+/* EV Range Layout Fixes */
+.live-simulation {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 15px;
+}
+
+.live-adaptive-container {
+display: grid;
+grid-template-columns: repeat(3, 1fr);
+gap: 15px;
+}
+
+.sim-card {
+min-width: 140px;
+padding: 15px;
+text-align: center;
+}
+
+.sim-card h3 {
+font-size: 20px;
+}
+
+.sim-card p {
+font-size: 14px;
+}
+
+.simulation-container {
+    width: 100%;
 }
 
 .charging-stations-section h3 {
