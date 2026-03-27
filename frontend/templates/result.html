@@ -34,84 +34,153 @@
                 </div>
             </div>
 
-            <div class="card result-layout iot-ui-panel">
-                <div class="iot-left">
-                    {% if prediction %}
-                    <div id="simulation-container" class="prediction-panel">
-                        <h3>EV Range Prediction Result</h3>
-                        <div class="panel-hint-row">
-                            <span class="hint-tag">TODO.md</span>
-                            <span class="hint-state">Live Adaptive EV Range Simulation</span>
+            <div class="card result-layout" style="max-width: 1400px; margin: 20px auto; display: flex; gap: 30px;">
+                <div class="prediction-left" style="flex: 1; min-width: 400px;">
+                
+                <!-- Issue #1: Ensure safe handling of prediction variable -->
+                {% if prediction %}
+                
+                <h2 style="margin-bottom: 20px;">EV Range Prediction Result</h2>
+                
+                <!-- Live Battery Simulation Section -->
+                <!-- Issue #3: Container now visible via JS when prediction is valid -->
+                <div id="simulation-container" style="display: none; margin-top: 30px; padding: 20px; background: #f8f9fa; border-radius: 8px; border: 2px solid #667eea;">
+                    <h3 style="margin-bottom: 15px; color: #667eea; text-align: center;">🔋 Live Adaptive EV Range Simulation</h3>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 15px; text-align: center;">
+                        <div style="padding: 15px; background: white; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+                            <div style="font-size: 14px; color: #666; margin-bottom: 5px;">Current Speed</div>
+                            <div id="current-speed" style="font-size: 32px; font-weight: bold; color: #667eea;">{{ prediction.speed }}</div>
+                            <div style="font-size: 12px; color: #999;">km/h</div>
                         </div>
-                        <div class="metric-grid">
-                            <div class="metric-card">
-                                <div class="metric-title">Current Speed</div>
-                                <div id="current-speed" class="metric-value">{{ prediction.speed }}</div>
-                                <div class="metric-unit">km/h</div>
-                            </div>
-                            <div class="metric-card">
-                                <div class="metric-title">Live Battery %</div>
-                                <div id="live-battery" class="metric-value">{{ prediction.battery }}</div>
-                                <div class="metric-unit">%</div>
-                            </div>
-                            <div class="metric-card">
-                                <div class="metric-title">Distance Travelled</div>
-                                <div id="distanceTravelled" class="metric-value">0.00</div>
-                                <div class="metric-unit">km</div>
-                            </div>
-                            <div class="metric-card">
-                                <div class="metric-title">Predicted Range</div>
-                                <div id="travelDistance" class="metric-value">{{ prediction.predicted_range_km }}</div>
-                                <div class="metric-unit">km</div>
-                            </div>
-                            <div class="metric-card">
-                                <div class="metric-title">Route Distance</div>
-                                <div id="routeDistance" class="metric-value">0</div>
-                                <div class="metric-unit">km</div>
-                            </div>
-                            <div class="metric-card">
-                                <div class="metric-title">Efficiency</div>
-                                <div id="efficiency-status" class="metric-value">Optimal</div>
-                                <div id="battery-sufficiency" class="metric-unit">Battery Sufficient</div>
-                            </div>
+                        <div style="padding: 15px; background: white; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+                            <div style="font-size: 14px; color: #666; margin-bottom: 5px;">Live Battery %</div>
+                            <div id="live-battery" style="font-size: 32px; font-weight: bold; color: #28a745;">{{ prediction.battery }}</div>
+                            <div style="font-size: 12px; color: #999;">%</div>
                         </div>
-                        <button id="openGoogleMapsBtn" class="open-maps-btn">Open in Google Maps</button>
+                        <div style="padding: 15px; background: white; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+                            <div style="font-size: 14px; color: #666; margin-bottom: 5px;">Distance Travelled</div>
+                            <div id="distanceTravelled" style="font-size: 32px; font-weight: bold; color: #667eea;">0.0</div>
+                            <div style="font-size: 12px; color: #999;">km</div>
+                        </div>
                     </div>
-                    {% else %}
-                    <div class="no-data-panel">
-                        <h2>No Prediction Data</h2>
-                        <p>Please <a href="{{ url_for('ev.predict_page') }}">make a prediction</a> first.</p>
-                    </div>
-                    {% endif %}
+                    
+                    <!-- Efficiency Status Row -->
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 15px; text-align: center;">
+                        <div style="padding: 12px; background: white; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+<div style="font-size: 14px; color: #666; margin-bottom: 5px;">Battery Status</div>
 
-                    <div id="prediction-data" {% if prediction %} data-prediction='{{ prediction | tojson | safe }}' {% else %} data-prediction="" {% endif %} style="display:none;"></div>
+                            <div style="font-size: 14px; color: #666; margin-bottom: 5px;">Battery Status</div>
+                            <div id="efficiency-status" style="font-size: 20px; font-weight: bold; color: #28a745;">Optimal</div>
+
+                        </div>
+                        <div style="padding: 12px; background: white; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+                            <div style="font-size: 14px; color: #666; margin-bottom: 5px;">Predicted Range</div>
+                            <div id="travelDistance" style="font-size: 20px; font-weight: bold; color: #28a745;">{{ prediction.predicted_range_km }}</div>
+                            <div style="font-size: 12px; color: #999;">km</div>
+                        </div>
+                    </div>
+                    
+                    <!-- Destination & Battery Sufficiency Row -->
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 15px; text-align: center;">
+                        <div style="padding: 12px; background: white; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+                            <div style="font-size: 14px; color: #666; margin-bottom: 5px;">Route Distance</div>
+                            <div id="routeDistance" style="font-size: 20px; font-weight: bold; color: #667eea;">--</div>
+                            <div style="font-size: 12px; color: #999;">km</div>
+                        </div>
+                        <div style="padding: 12px; background: white; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+                            <div style="font-size: 14px; color: #666; margin-bottom: 5px;">Battery Status</div>
+                            <div style="font-size: 14px; color: #666; margin-bottom: 5px;">Efficiency Status</div>
+                            <div id="battery-sufficiency" style="font-size: 20px; font-weight: bold; color: #666;">--</div>
+                            <div id="differenceDistance" style="font-size: 14px; color: #666;">--</div>
+
+                        </div>
+                    </div>
+                    
+                    <div style="margin-top: 15px; padding: 12px; background: #e7f3ff; border-radius: 5px; text-align: center; color: #0066cc;">
+                        <span id="simulation-status">Initializing simulation...</span>
+                    </div>
+                    
+                    <!-- Open in Google Maps Button - Only works if destination exists -->
+                    <div style="margin-top: 20px; text-align: center;">
+                        <button id="openGoogleMapsBtn" class="nav-btn">
+                            Open in Google Maps
+                        </button>
+                    </div>
                 </div>
-
-                <div id="iot-dashboard-panel" class="driving-cluster iot-dashboard-panel">
-                    <h3>🚗 Professional EV Driving Cluster</h3>
-                    <div class="cluster-subtitle">Model: Registered Vehicle</div>
-                    <div class="gauge-row">
-                        <div class="gauge-wrapper">
-                            <canvas id="speedCanvas" width="260" height="260"></canvas>
-                            <div class="gauge-label">km/h</div>
+                
+                <!-- Charging Stations List Section -->
+                <div id="charging-stations-section" class="charging-stations-section" style="display: none;">
+                    <h3>⚡ Nearby Charging Stations (Next 100 km)</h3>
+                    <div id="stations-list"></div>
+                </div>
+                
+                {% else %}
+                <!-- Fallback when prediction is not available -->
+                <h2>No Prediction Data Available</h2>
+                <p style="text-align: center; padding: 20px;">
+                    No prediction data found. Please <a href="{{ url_for('ev.predict_page') }}">make a prediction</a> first.
+                </p>
+                {% endif %}
+                
+                <!-- Store prediction data in a data attribute for safe JS access -->
+                <div id="prediction-data" 
+                    {% if prediction %}
+                    data-prediction='{{ prediction | tojson | safe }}'
+                    {% else %}
+                    data-prediction=""
+                    {% endif %}
+                    style="display: none;"></div>
+                
+                </div> <!-- end prediction-left -->
+                
+<div class="simulation-right" style="flex: 1; min-width: 400px; background: #0f172a; padding: 30px; border-radius: 20px; border: 2px solid #22c55e; box-shadow: 0 20px 40px rgba(34,197,94,0.3);">
+                    <h3 style="text-align: center; color: #22c55e; margin-bottom: 30px; font-size: 24px; text-shadow: 0 0 15px #22c55e; font-weight: 700;">🚗 Professional EV Driving Cluster</h3>
+                    
+                    <div class="driving-cluster">
+                      <!-- Large Speedometer (300px) -->
+                      <div id="speedometer-container" style="position: relative;">
+                        <div id="speedometer" style="width: 300px; height: 300px; margin: 0 auto;"></div>
+                        <!-- Zones -->
+<div class="speed-zone green" style="position:absolute;top:50%;left:5%;transform:translateY(-50%);">0-80<br>GREEN</div>
+                        <div class="speed-zone yellow" style="position:absolute;top:10%;left:35%;">80-120<br>YELLOW</div>
+                        <div class="speed-zone red" style="position:absolute;top:50%;right:5%;transform:translateY(-50%);">120-160<br>RED</div>
+                        <div id="digital-speed" style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-size:60px;font-weight:900;color:#00ff88;text-shadow:0 0 20px #00ff88;">0</div>
+                        <div style="position:absolute;bottom:10%;left:50%;transform:translateX(-50%);font-size:18px;color:#94a3b8;font-weight:500;">km/h</div>
+                      </div>
+                      
+                      <!-- RPM Gauge -->
+                      <div id="rpm-container" style="margin-top:20px;">
+                        <div id="rpm-gauge" style="width: 240px; height: 240px; margin: 0 auto;"></div>
+                        <div id="digital-rpm" style="text-align:center;font-size:42px;color:#ef4444;font-weight:800;text-shadow:0 0 15px #ef4444;margin-top:5px;">0</div>
+                        <div style="text-align:center;font-size:16px;color:#94a3b8;margin-top:5px;">RPM (Max 8000)</div>
+                      </div>
+                      
+                      <!-- Speed Limit Card -->
+                      <div id="speed-limit" style="text-align:center;margin:25px 0;padding:20px;background:linear-gradient(145deg,#1e293b,#334155);border-radius:16px;border:1px solid #475569;box-shadow:0 8px 25px rgba(0,0,0,0.3);">
+                        <div style="font-size:14px;color:#fbbf24;font-weight:600;margin-bottom:5px;">Max Speed Limit</div>
+                        <div id="speed-limit-value" style="font-size:38px;font-weight:900;color:#3b82f6;text-shadow:0 0 12px #3b82f6;">160</div>
+                        <div style="font-size:13px;color:#94a3b8;">km/h</div>
+                      </div>
+                      
+                      <!-- Controls Row: Slider LEFT + Brake RIGHT -->
+                      <div style="display:flex;gap:40px;justify-content:center;align-items:center;flex-wrap:wrap;">
+                        <!-- LEFT: Vertical Accelerator Slider -->
+                        <div style="display:flex;flex-direction:column;align-items:center;">
+                          <div id="pedal-slider" class="pedal-slider" style="width:85px;height:340px;position:relative;border-radius:45px;background:linear-gradient(180deg,#15803d 0%,#22c55e 40%,#f8fafc 50%,#f59e0b 60%,#ef4444 100%);box-shadow:inset 0 5px 15px rgba(0,0,0,0.25),0 10px 25px rgba(0,0,0,0.35);cursor:grab;">
+                            <div class="slider-thumb" style="position:absolute;left:50%;top:50%;width:65px;height:65px;margin-left:-32.5px;margin-top:-32.5px;background:linear-gradient(145deg,#ffffff 0%,#f1f5f9 100%);border-radius:50%;box-shadow:0 10px 30px rgba(0,0,0,0.4),inset 0 3px 6px rgba(255,255,255,0.9);transition:all 0.25s cubic-bezier(0.4,0,0.2,1);cursor:grab;">
+                              <div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-size:22px;">⚡</div>
+                            </div>
+                          </div>
+                          <div id="pedal-indicator" style="margin-top:10px;font-size:15px;font-weight:600;color:#94a3b8;">Coasting</div>
                         </div>
-                        <div class="gauge-wrapper">
-                            <canvas id="rpmCanvas" width="260" height="260"></canvas>
-                            <div class="gauge-label">RPM x1000</div>
+                        
+                        <!-- RIGHT: Brake Button -->
+                        <div style="display:flex;flex-direction:column;align-items:center;">
+                          <button id="brake-button" style="width:85px;height:85px;border:none;border-radius:50%;background:linear-gradient(145deg,#ef4444,#dc2626);box-shadow:0 8px 25px rgba(239,68,68,0.4),inset 0 3px 6px rgba(255,255,255,0.2);color:white;font-size:18px;font-weight:800;cursor:pointer;transition:all 0.2s cubic-bezier(0.4,0,0.2,1);position:relative;overflow:hidden;">BRAKE</button>
+                          <div style="margin-top:8px;font-size:14px;color:#94a3b8;">Press to Brake</div>
                         </div>
+                      </div>
                     </div>
-                    <div class="cluster-status">Battery: <span id="battery-text">0%</span> • Distance: <span id="distance-value">0.00 km</span></div>
-                    <div class="control-panel">
-                        <div id="accelerate-btn" class="control-image accel-image" role="button" aria-label="Accelerator Pedal">
-                            <img src="/static/images/accelerator-pedal.png" alt="Accelerator Pedal" />
-                            <span>Accelerator Pedal</span>
-                        </div>
-                        <div id="brake-btn" class="control-image brake-image" role="button" aria-label="Brake Pedal">
-                            <img src="/static/images/brake-pedal.png" alt="Brake Pedal" />
-                            <span>Brake Pedal</span>
-                        </div>
-                    </div>
-                    <div class="control-instruction">Press and hold accelerator to increase speed, release to coast; press and hold brake for rapid stop.</div>
                 </div>
             </div>
         </div>

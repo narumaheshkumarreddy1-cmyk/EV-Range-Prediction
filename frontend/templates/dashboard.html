@@ -2,8 +2,11 @@
 <html>
 <head>
     <title>Dashboard - EV Range Prediction</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="/static/css/style.css">
     <link rel="stylesheet" href="/static/css/dashboard.css">
+    <link rel="stylesheet" href="/static/css/dashboard_gauges.css">
+
 </head>
 <body>
     <div class="dashboard-container">
@@ -54,45 +57,50 @@
             </div>
 
             <!-- EV Driving Simulation Cluster -->
-            <div id="simulation-container" class="driving-cluster" style="display: none; margin-top: 40px;">
-                <div id="speedometer-container">
-                    <div id="speedometer"></div>
-                    <div id="digital-speed">0</div>
-                </div>
+                <div id="simulation-container" class="simulation-cluster" style="margin-top: 40px;">
+<div style="display:flex;justify-content:center;gap:40px;margin-top:30px;">
 
-                <div id="rpm-container">
-                    <div id="rpm-gauge"></div>
-                    <div id="digital-rpm">0</div>
-                </div>
+  <canvas id="speedCanvas" width="300" height="300"></canvas>
+  <canvas id="rpmCanvas" width="300" height="300"></canvas>
 
-                <div id="speed-limit">
-                    <div>SPEED LIMIT</div>
-                    <div id="speed-limit-value">160</div>
-                    <div>km/h</div>
-                </div>
+</div>
 
-                <div class="controls-row" style="display: flex; gap: 30px; align-items: center; justify-content: center;">
-                    <div class="pedal-control">
-                        <div id="pedal-slider" class="pedal-slider">
-                            <div class="slider-thumb"></div>
-                        </div>
-                        <div id="pedal-indicator" class="neutral">Coasting</div>
-                    </div>
-                    <button id="brake-button">BRAKE</button>
-                </div>
+<div style="text-align:center;margin-top:20px;color:white;font-size:18px;">
+  Battery: <span id="batteryText">50%</span> |
+  Distance: <span id="distanceText">0 km</span>
+</div>
+
+<div style="text-align:center;margin-top:30px;">
+  <img src="https://cdn-icons-png.flaticon.com/512/1048/1048946.png" 
+       style="width:100px;margin-right:80px;">
+  
+  <img src="https://cdn-icons-png.flaticon.com/512/1048/1048953.png" 
+       style="width:100px;">
+  
+  <div style="color:white;margin-top:10px;">
+    Brake Pedal &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Accelerator Pedal
+  </div>
+</div>
 
                 <div id="simulation-status" style="text-align: center; color: #94a3b8; font-size: 14px;"></div>
             </div>
         </div>
     </div>
 
+    <!-- Dynamic car data for gauges (fallback for dashboard) -->
+    <script>
+        window.carData = window.carData || {topSpeed: 150, maxRPM: 12000};
+    </script>
     <script src="/static/js/auth.js"></script>
     <script src="/static/js/dashboard.js"></script>
-    <script src="/static/js/simulation.js"></script>
+<script src="/static/js/simulation.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             checkAuthentication();
             loadDashboardData();
+            if (typeof initSimulation === 'function' && window.carData) {
+                initSimulation({battery: 100});
+            }
         });
     </script>
 </body>
