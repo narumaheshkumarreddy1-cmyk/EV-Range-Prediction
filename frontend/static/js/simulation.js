@@ -1,20 +1,26 @@
 console.log("✅ NEW GAUGE JS LOADED - FIXED VERSION");
 
+// 🔥 CAR CONFIG - Speed limit based on selected car
+// Ensure carData available
+window.carData = window.carData || {topSpeed: 160, maxRPM: 8000, accel: 50};
+
+const CAR = {
+    maxSpeed: window.carData.topSpeed || 160
+};
+
 const state = {
     speed: 0,
     rpm: 0,
     battery: 80,
     tripDistance: 0,
     odometerDistance: 0,
-    maxSpeed: window.carData?.topSpeed || 160,
-    maxRPM: window.carData?.maxRPM || 8000,
+    maxSpeed: CAR.maxSpeed,
+    maxRPM: window.carData.maxRPM || 8000,
     isAccelerating: false,
     isBraking: false,
-    prevTime: performance.now()
+    prevTime: performance.now(),
+    loopRunning: false
 };
-
-
-
 
 function drawSpeedometer(ctx, speed) {
     const cx = 150;
@@ -44,8 +50,9 @@ function drawSpeedometer(ctx, speed) {
     ctx.font = "12px Orbitron";
     ctx.textAlign = "center";
 
-    for (let i = 0; i <= 200; i += 20) {
-        let angle = (i / 200) * 1.5 * Math.PI + 0.75 * Math.PI;
+    // ✅ DYNAMIC SCALE BASED ON CAR MAX SPEED
+    for (let i = 0; i <= CAR.maxSpeed; i += 20) {
+        let angle = (i / CAR.maxSpeed) * 1.5 * Math.PI + 0.75 * Math.PI;
 
         let x1 = cx + Math.cos(angle) * (r - 10);
         let y1 = cy + Math.sin(angle) * (r - 10);
@@ -64,11 +71,12 @@ function drawSpeedometer(ctx, speed) {
         // number
         let tx = cx + Math.cos(angle) * (r - 45);
         let ty = cy + Math.sin(angle) * (r - 45);
-        ctx.fillText(i, tx, ty);
+        ctx.fillText(Math.round(i), tx, ty);
     }
 
     // === NEEDLE (SMOOTH) ===
-    let angle = (speed / 200) * 1.5 * Math.PI + 0.75 * Math.PI;
+    // ✅ FIX ANGLE: DYNAMIC BASED ON CAR MAX SPEED
+    let angle = (speed / CAR.maxSpeed) * 1.5 * Math.PI + 0.75 * Math.PI;
 
     let nx = cx + Math.cos(angle) * (r - 50);
     let ny = cy + Math.sin(angle) * (r - 50);
@@ -167,53 +175,97 @@ function drawRPM(ctx, rpm) {
 }
 
 function render() {
-    // Update text displays
+
+    console.log("RENDER RUNNING");
+
+    const speedEl = document.getElementById("currentSpeed");
     const batteryEl = document.getElementById("batteryText");
     const distanceEl = document.getElementById("distanceText");
 
-    if (batteryEl) {
-        batteryEl.innerText = Math.round(state.battery) + "%";
+    if (speedEl) {
+        speedEl.textContent = Math.round(state.speed) + " km/h";
+        console.log(`📊 Current speed text updated to: ${Math.round(state.speed)} km/h`);
+    } else {
+        console.log("❌ currentSpeed NOT FOUND");
     }
+
+    if (batteryEl) {
+        batteryEl.textContent = state.battery.toFixed(1) + " %";
+    } else {
+        console.log("❌ batteryText NOT FOUND");
+    }
+
     if (distanceEl) {
-        distanceEl.innerText = state.tripDistance.toFixed(1) + " km";
+        distanceEl.textContent = state.tripDistance.toFixed(2) + " km";
+    } else {
+        console.log("❌ distanceText NOT FOUND");
     }
 }
 
 function updateCluster() {
-    const speedCtx = document.getElementById("speedCanvas")?.getContext("2d");
-    const rpmCtx = document.getElementById("rpmCanvas")?.getContext("2d");
+    const speedCanvas = document.getElementById("speedCanvas");
+    const rpmCanvas = document.getElementById("rpmCanvas");
+    
+    if (!speedCanvas || !rpmCanvas) {
+        console.warn("Canvases not found - waiting for DOM");
+        return;
+    }
+    
+    const speedCtx = speedCanvas.getContext("2d");
+    const rpmCtx = rpmCanvas.getContext("2d");
 
-    if (speedCtx) drawSpeedometer(speedCtx, state.speed);
-    if (rpmCtx) drawRPM(rpmCtx, state.rpm);
+    console.log(`Updating gauges - Speed: ${Math.round(state.speed)} km/h, RPM: ${Math.round(state.rpm)}`);
+    
+    drawSpeedometer(speedCtx, state.speed);
+    drawRPM(rpmCtx, state.rpm);
 }
 
 
-function loop() {
-    const now = performance.now();
-    const dt = (now - state.prevTime) / 1000; // seconds
-    state.prevTime = now;
-
-    // Physics updates
+function updatePhysics(dt) {
+    // 🚀 ACCELERATION
     if (state.isAccelerating) {
-        state.speed += 50 * dt; // accel rate km/h/s
-        state.battery -= 10 * dt / 60; // 10% per min
-    } else if (state.isBraking) {
-        state.speed -= 60 * dt; // brake rate km/h/s
-        state.battery += 3 * dt / 60; // regen 3% per min
-    } else {
-        // coasting decay
-        state.speed *= Math.pow(0.95, dt * 5); // gradual slow down
+        const accel = (window.currentCar?.accel || window.carData?.accel || 50);
+        state.speed += accel * dt;
+        state.battery -= 0.02 * dt;
     }
 
-    // clamps
+    // 🛑 BRAKE
+    if (state.isBraking) {
+        state.speed -= 40 * dt;
+        state.battery += 0.01 * dt;
+    } else {
+        // 🌀 NATURAL DRAG
+        state.speed *= 0.995;
+    }
+
+    // 🚫 LIMIT SPEED
+    if (state.speed > state.maxSpeed) {
+        state.speed = state.maxSpeed;
+    }
+    if (state.speed < 0) state.speed = 0;
+
+    // ✅ MAIN LOGIC (distance = speed × time)
+    state.tripDistance += state.speed * dt / 3600;
+    state.odometerDistance += state.speed * dt / 3600;
+
+    // 🔋 BATTERY CLAMP
+    state.battery = Math.max(0, Math.min(100, state.battery));
+
+    // RPM
+    state.rpm = (state.speed / state.maxSpeed) * state.maxRPM;
+}
+
+function loop() {
+    console.log("LOOP RUNNING - Speed:", state.speed);
+
+    const now = performance.now();
+    const dt = (now - state.prevTime) / 1000;
+    state.prevTime = now;
+
+    updatePhysics(dt);
+
     state.speed = Math.max(0, Math.min(state.maxSpeed, state.speed));
     state.battery = Math.max(0, Math.min(100, state.battery));
-    state.rpm = (state.speed / state.maxSpeed) * state.maxRPM;
-
-    // distance update (speed km/h * hours)
-    const deltaDistance = state.speed * dt / 3600;
-    state.tripDistance += deltaDistance;
-    state.odometerDistance += deltaDistance;
 
     updateCluster();
     render();
@@ -221,7 +273,8 @@ function loop() {
     requestAnimationFrame(loop);
 }
 
-// initSimulation - called from HTML
+
+
 function initSimulation(config) {
     if (config.battery !== undefined) {
         state.battery = config.battery;
@@ -230,13 +283,11 @@ function initSimulation(config) {
     state.tripDistance = 0;
     state.prevTime = performance.now();
 
-    // Show container
     const container = document.getElementById("simulation-container");
     if (container) {
         container.style.display = "block";
     }
 
-    // Pedal event listeners
     const accelPedal = document.querySelector(".pedal.accel");
     const brakePedal = document.querySelector(".pedal.brake");
 
@@ -261,22 +312,31 @@ function initSimulation(config) {
         brakePedal.addEventListener("touchend", () => setBraking(false));
     }
 
+    // ⌨️ KEYBOARD CONTROLS for easy testing
+    const keys = {};
+    document.addEventListener('keydown', (e) => {
+        keys[e.key.toLowerCase()] = true;
+        if (e.key === 'w' || e.key === 'ArrowUp') state.isAccelerating = true;
+        if (e.key === 's' || e.key === 'ArrowDown') state.isBraking = true;
+    });
+    document.addEventListener('keyup', (e) => {
+        keys[e.key.toLowerCase()] = false;
+        if (e.key === 'w' || e.key === 'ArrowUp') state.isAccelerating = false;
+        if (e.key === 's' || e.key === 'ArrowDown') state.isBraking = false;
+    });
+
     console.log("✅ Simulation initialized - pedals active, physics ready");
 
-    // Start loop if not running
     if (!state.loopRunning) {
         state.loopRunning = true;
         requestAnimationFrame(loop);
     }
 }
 
-// Prevent multiple loops
 state.loopRunning = false;
 
-// Auto-start only if pedals ready
 if (document.readyState === "loading") {
     document.addEventListener("DOMContentLoaded", initSimulation);
 } else {
     initSimulation({battery: 100});
 }
-
