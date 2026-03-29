@@ -42,7 +42,7 @@ body.dark-mode {
 }
 
 .sidebar {
-    width: 240px;
+    width: min(240px, 80vw);
     background: var(--sidebar, #0f172a);
     color: var(--sidebar-text, white);
     flex-shrink: 0;
@@ -53,6 +53,7 @@ body.dark-mode {
     height: 100vh;
     overflow-y: auto;
     box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    z-index: 1000;
 }
 
 .sidebar-header {
@@ -98,9 +99,9 @@ body.dark-mode {
 
 .main-content {
     flex: 1;
-    padding: 40px;
+    padding: clamp(20px, 5vw, 40px);
     background: var(--bg);
-    margin-left: 240px;
+    margin-left: min(240px, 80vw);
     overflow-y: auto;
     min-height: 100vh;
 }
@@ -122,7 +123,7 @@ body.dark-mode {
     padding: 20px;
     border-radius: 10px;
     margin-bottom: 20px;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    box-shadow Asc 0 2px 5px rgba(0, 0, 0, 0.1);
 }
 
 .top-bar h1 {
@@ -141,1235 +142,140 @@ body.dark-mode {
     height: 40px;
     border-radius: 50%;
     object-fit: cover;
-    border: 2px solid #667eea;
+    border Asc 2px solid #667eea;
 }
 
 .dashboard-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(min(300px, 90vw), 1fr));
     gap: 20px;
 }
 
 .card {
-    background: var(--card);
-    border-radius: 10px;
-    padding: 20px;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+ Asc background Asc: var Asc(--card);
+ Asc border-radius Asc 10px Asc;
+ Asc padding Asc 20px Asc;
+ Asc box-shadow Asc  Asc0 2px 10px rgba(0 Asc, 0 Asc Asc, 0, 0.1);
 }
 
 .card h2 {
     margin: 0 0 15px 0;
-    color: #333;
-    font-size: 18px;
-    border-bottom: 2px solid #667eea;
-    padding-bottom: 10px;
+ Asc   color: #333;
+ Asc   font-size Asc 18px Asc;
+ Asc   border-bottom Asc 2px solid #667eea;
+ Asc   padding-bottom Asc 10px Asc;
 }
 
 .user-info {
-    display: flex;
-    gap: 20px;
+ Asc   display Asc flex;
+ Asc   gap Asc 20px Asc;
 }
 
-.profile-photo {
-    width: 100px;
-    height: 100px;
-    border-radius: 10px;
-    object-fit: cover;
-    flex-shrink: 0;
+.profile Asc-photo {
+ Asc   width Asc 100px Asc;
+ Asc   height Asc 100px Asc;
+ Asc   border-radius Asc 10px Asc Asc;
+ Asc   object-fit Asc cover Asc;
+ Asc   flex-shrink Asc 0;
 }
 
 .user-details {
-    flex: 1;
+ Asc   flex Asc 1;
 }
 
 .user-details p {
-    margin: 8px 0;
-    color: #555;
-    font-size: 14px;
+ Asc   margin Asc 8px 0 Asc;
+ Asc   color Asc #555;
+ Asc   font-size Asc  Asc14px Asc;
 }
 
-.car-info {
-    display: flex;
-    align-items: center;
-    gap: 20px;
+.car-info Asc{
+ Asc   display Asc flex Asc;
+ Asc Asc align-items Asc center;
+ Asc   gap Asc 20px Asc;
 }
 
 .car-icon {
-    font-size: 48px;
-    flex-shrink: 0;
+ Asc   font-size Asc 48px Asc;
+ Asc   flex-shrink Asc 0;
 }
 
 .stats {
-    display: grid;
-    gap: 15px;
+ Asc   display Asc grid;
+ Asc   gap Asc 15px Asc;
 }
 
 .stat-item {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 10px 0;
-    border-bottom: 1px solid #eee;
+ Asc Asc display Asc flex;
+ Asc   justify-content Asc space-between;
+ Asc   align-items Asc center;
+ Asc   padding Asc Asc10px 0 Asc;
+ Asc   border-bottom Asc 1 Ascpx solid # Asc Asc Asc Asc Asc;
 }
 
 .stat-label {
-    color: #666;
-    font-size: 14px;
+ Asc Asc color Asc #666;
+ Asc   font-size Asc Asc14px;
 }
 
 .stat-value {
-    font-size: 24px;
-    font-weight: bold;
-    color: #667eea;
+ Asc Asc font-size Asc 24px Asc;
+ Asc Asc font-weight Asc bold;
+ Asc Asc color Asc #667eea;
 }
 
 .actions {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
+ Asc Asc Asc display Asc flex;
+ Asc   flex-direction Asc column;
+ Asc Asc Asc Asc Asc Asc Asc Asc;
+ Asc Asc gap Asc 10px Asc;
 }
 
 .actions button {
-    padding: 10px;
-    background: #667eea;
-    color: white;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-    transition: background 0.3s;
+ Asc Asc padding Asc 10px;
+ Asc Asc background Asc Asc #667eea;
+ Asc Asc color Asc white;
+ Asc Asc border Asc none;
+ Asc Asc border-radius Asc Asc 5px;
+ Asc Asc cursor Asc pointer;
+ Asc Asc transition Asc background Asc Asc Asc0.3s;
 }
 
 .actions button:hover {
-    background: #764ba2;
+ Asc   Asc Asc Asc background Asc #764 Asc Asc Asc Asc Asc Asc;
 }
 
-/* Settings Page */
+ /* Settings Page */
 .settings-container {
-    background: white;
-    border-radius: 10px;
-    padding: 30px;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-    max-width: 600px;
+ Asc   background Asc white;
+ Asc   border-radius Asc 10px;
+ Asc   padding Asc  Asc Asc30px;
+ Asc   Asc Asc box-shadow Asc 0 2px 10px rgba(0, 0, 0, 0.1);
+ Asc Asc Asc max-width Asc Asc Asc600px;
 }
 
 .settings-section {
-    margin-bottom: 30px;
-    padding-bottom: 20px;
-    border-bottom: 1px solid #eee;
+ Asc   margin-bottom Asc Asc30px Asc;
+ Asc   padding-bottom Asc 20px Asc;
+ Asc   border-bottom Asc 1px solid #eee;
 }
 
-.settings-section:last-of-type {
-    border-bottom: none;
+.settings-section Asc:last-of-type {
+ Asc   border-bottom Asc none;
 }
 
-.settings-section h2 {
-    color: #333;
-    margin: 0 0 15px 0;
-    font-size: 18px;
+.settings-section h Asc Asc Asc2 {
+ Asc Asc   color Asc #333;
+ Asc   margin Asc 0 0 Asc 15px 0;
+ Asc Asc Asc font-size Asc 18px;
 }
 
 .photo-upload {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 15px;
-    padding: 20px;
-    background: #f9f9f9;
-    border-radius: 8px;
-    border: 2px dashed #ddd;
-}
-
-.photo-preview {
-    width: 120px;
-    height: 120px;
-    border-radius: 10px;
-    object-fit: cover;
-    border: 2px solid #667eea;
-}
-
-.save-btn {
-    width: 100%;
-    padding: 12px;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    color: white;
-    border: none;
-    border-radius: 5px;
-    font-size: 16px;
-    font-weight: 600;
-    cursor: pointer;
-    margin-top: 20px;
-}
-
-.save-btn:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
-}
-
-/* Profile Page */
-.profile-container {
-    background: white;
-    border-radius: 10px;
-    padding: 30px;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-}
-
-.profile-header {
-    display: flex;
-    gap: 30px;
-    margin-bottom: 40px;
-    padding-bottom: 30px;
-    border-bottom: 2px solid #eee;
-}
-
-.profile-header-photo {
-    width: 150px;
-    height: 150px;
-    border-radius: 15px;
-    object-fit: cover;
-    flex-shrink: 0;
-    border: 3px solid #667eea;
-}
-
-.profile-header-info h2 {
-    margin: 0 0 10px 0;
-    color: #333;
-}
-
-.profile-header-info p {
-    margin: 5px 0;
-    color: #666;
-}
-
-.profile-sections {
-    display: grid;
-    gap: 30px;
-}
-
-.profile-section h3 {
-    color: #333;
-    margin: 0 0 15px 0;
-    font-size: 16px;
-    border-bottom: 2px solid #667eea;
-    padding-bottom: 10px;
-}
-
-.profile-info {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 40px;
-    margin-top: 20px;
-}
-
-.info-box label {
-    font-size: 14px;
-    color: #777;
-    text-transform: uppercase;
-    font-weight: 500;
-}
-
-.info-box p {
-    font-size: 18px;
-    margin-top: 6px;
-    font-weight: 600;
-}
-
-@media (max-width: 768px) {
-    .profile-info {
-        grid-template-columns: 1fr;
-    }
-}
-
-.info-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: 20px;
-}
-
-.info-item {
-    display: flex;
-    flex-direction: column;
-}
-
-.info-label {
-    color: #999;
-    font-size: 12px;
-    text-transform: uppercase;
-    margin-bottom: 5px;
-}
-
-.info-value {
-    color: #333;
-    font-size: 14px;
-    font-weight: 500;
-}
-
-.vehicle-card {
-    display: flex;
-    gap: 20px;
-    padding: 20px;
-    background: #f9f9f9;
-    border-radius: 8px;
-}
-
-.vehicle-icon {
-    font-size: 48px;
-    flex-shrink: 0;
-}
-
-.vehicle-details {
-    flex: 1;
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 20px;
-}
-
-.bio-section {
-    padding: 15px;
-    background: #f9f9f9;
-    border-radius: 8px;
-    color: #555;
-    line-height: 1.6;
-}
-
-.profile-actions {
-    display: flex;
-    gap: 10px;
-    margin-top: 30px;
-}
-
-.edit-btn {
-    padding: 10px 20px;
-    background: #667eea;
-    color: white;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-}
-
-.edit-btn:hover {
-    background: #764ba2;
-}
-
-/* Station Card Styles (used in map page) */
-.station-card {
-    padding: 12px;
-    border: 1px solid #eee;
-    border-radius: 5px;
-    margin-bottom: 10px;
-}
-
-.station-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 8px;
-}
-
-.station-header h4 {
-    margin: 0;
-    font-size: 14px;
-    color: #333;
-}
-
-.station-type {
-    font-size: 11px;
-    padding: 3px 8px;
-    border-radius: 3px;
-    color: white;
-    font-weight: bold;
-}
-
-.station-type.fast {
-    background: #e74c3c;
-}
-
-.station-type.standard {
-    background: #f39c12;
-}
-
-.station-type.ac {
-    background: #3498db;
-}
-
-.station-info {
-    display: flex;
-    justify-content: space-between;
-    font-size: 12px;
-    color: #666;
-    margin: 8px 0;
-}
-
-.station-card button {
-    width: 100%;
-    padding: 6px;
-    background: #667eea;
-    color: white;
-    border: none;
-    border-radius: 3px;
-    font-size: 12px;
-    cursor: pointer;
-    margin-bottom: 4px;
-}
-
-.station-card button:last-child {
-    margin-bottom: 0;
-}
-
-/* Route Card Styles */
-.route-card {
-    padding: 12px;
-    border: 1px solid #eee;
-    border-radius: 8px;
-    margin-bottom: 10px;
-    cursor: pointer;
-    transition: background 0.3s;
-}
-
-.route-card:hover {
-    background: #f8f9fa;
-}
-
-.route-card.selected {
-    border-color: #667eea;
-    background: rgba(102, 126, 234, 0.1);
-}
-
-.route-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 8px;
-}
-
-.route-type {
-    font-size: 12px;
-    padding: 3px 8px;
-    border-radius: 3px;
-    color: white;
-    font-weight: bold;
-}
-
-.route-type.fastest {
-    background: #e74c3c;
-}
-
-.route-type.shortest {
-    background: #f39c12;
-}
-
-.route-type.eco {
-    background: #2ecc71;
-}
-
-.route-details {
-    display: flex;
-    justify-content: space-between;
-    font-size: 14px;
-    color: #666;
-}
-
-.route-traffic {
-    font-size: 12px;
-    margin-top: 5px;
-    color: #999;
-}
-
-/* Traffic-aware marker colors */
-.traffic-high {
-    background-color: #c0392b !important;
-}
-
-.traffic-medium {
-    background-color: #f39c12 !important;
-}
-
-.traffic-low {
-    background-color: #2ecc71 !important;
-}
-
-/* ===========================================
-   FULL-SCREEN MAP STYLES (Google Maps style)
-   =========================================== */
-
-/* Reset for map page - ensure full viewport coverage */
-/* Only apply these styles when body has the map-page class */
-body.map-page {
-    margin: 0;
-    padding: 0;
-    overflow: hidden;
-}
-
-html.map-page {
-    margin: 0;
-    padding: 0;
-    height: 100%;
-    width: 100%;
-}
-
-/* Full-screen map container - makes map fill entire viewport */
-#map {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100vw;
-    height: 100vh;
-    z-index: 1;
-    background: #e5e3df; /* Light gray background while loading */
-}
-
-/* Floating navigation button */
-.map-nav-button {
-    position: absolute;
-    top: 20px;
-    left: 50%;
-    transform: translateX(-50%);
-    background: rgba(255, 255, 255, 0.95);
-    backdrop-filter: blur(10px);
-    border: none;
-    border-radius: 25px;
-    padding: 12px 24px;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
-    z-index: 1000;
-    cursor: pointer;
-    font-weight: 600;
-    color: #333;
-    font-size: 14px;
-    transition: all 0.3s ease;
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-}
-
-.map-nav-button:hover {
-    background: rgba(102, 126, 234, 0.1);
-    transform: translateX(-50%) translateY(-2px);
-    box-shadow: 0 6px 25px rgba(0, 0, 0, 0.2);
-}
-
-/* Floating controls overlay - search and filters */
-.map-overlay-controls {
-    position: absolute;
-    top: 80px;
-    left: 20px;
-    background: rgba(255, 255, 255, 0.95);
-    backdrop-filter: blur(10px);
-    border-radius: 12px;
-    padding: 20px;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
-    z-index: 1000;
-    min-width: 320px;
-    max-width: 380px;
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-}
-
-.map-overlay-controls h3 {
-    margin: 0 0 15px 0;
-    font-size: 18px;
-    color: #333;
-    border-bottom: 2px solid #667eea;
-    padding-bottom: 8px;
-}
-
-/* Floating station list */
-.map-overlay-stations {
-    position: absolute;
-    top: 80px;
-    right: 20px;
-    background: rgba(255, 255, 255, 0.95);
-    backdrop-filter: blur(10px);
-    border-radius: 12px;
-    padding: 20px;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
-    z-index: 1000;
-    width: 340px;
-    max-height: 70vh;
-    overflow-y: auto;
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-}
-
-.map-overlay-stations h3 {
-    margin: 0 0 15px 0;
-    font-size: 18px;
-    color: #333;
-    border-bottom: 2px solid #667eea;
-    padding-bottom: 8px;
-}
-
-/* Floating route options overlay */
-.map-overlay-routes {
-    position: absolute;
-    bottom: 30px;
-    left: 20px;
-    background: rgba(255, 255, 255, 0.95);
-    backdrop-filter: blur(10px);
-    border-radius: 12px;
-    padding: 20px;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
-    z-index: 1000;
-    width: 360px;
-    max-height: 50vh;
-    overflow-y: auto;
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-}
-
-.map-overlay-routes h3 {
-    margin: 0 0 15px 0;
-    font-size: 18px;
-    color: #333;
-    border-bottom: 2px solid #667eea;
-    padding-bottom: 8px;
-}
-
-/* Status message toast */
-.status-message {
-    padding: 10px 15px;
-    border-radius: 6px;
-    font-size: 14px;
-    display: none;
-    margin-top: 10px;
-    text-align: center;
-}
-
-.status-message.show {
-    display: block;
-    animation: fadeIn 0.3s ease;
-}
-
-.status-message.info {
-    background: #e3f2fd;
-    color: #1565c0;
-    border: 1px solid #90caf9;
-}
-
-.status-message.success {
-    background: #e8f5e9;
-    color: #2e7d32;
-    border: 1px solid #a5d6a7;
-}
-
-.status-message.error {
-    background: #ffebee;
-    color: #c62828;
-    border: 1px solid #ef9a9a;
-}
-
-.status-message.loading {
-    background: #fff3e0;
-    color: #e65100;
-    border: 1px solid #ffcc80;
-}
-
-@keyframes fadeIn {
-    from { opacity: 0; transform: translateY(-10px); }
-    to { opacity: 1; transform: translateY(0); }
-}
-
-/* Control buttons */
-.control-btn {
-    padding: 10px 16px;
-    background: #667eea;
-    color: white;
-    border: none;
-    border-radius: 6px;
-    cursor: pointer;
-    font-weight: 500;
-    font-size: 14px;
-    transition: background 0.3s ease;
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-}
-
-.control-btn:hover {
-    background: #764ba2;
-}
-
-/* Filter group in map page */
-.filter-group {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-}
-
-.filter-group label {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    cursor: pointer;
-    font-size: 14px;
-    color: #333;
-}
-
-.filter-group input[type="checkbox"] {
-    width: 16px;
-    height: 16px;
-    cursor: pointer;
-}
-
-/* Mobile responsive for full-screen map */
-@media (max-width: 768px) {
-    .map-overlay-controls {
-        top: 70px;
-        left: 10px;
-        right: 10px;
-        min-width: auto;
-        max-width: none;
-        width: auto;
-    }
-
-    .map-overlay-stations {
-        top: auto;
-        bottom: 10px;
-        right: 10px;
-        left: 10px;
-        width: auto;
-        max-height: 40vh;
-    }
-
-    .map-overlay-routes {
-        bottom: 10px;
-        left: 10px;
-        right: 10px;
-        width: auto;
-        max-height: 30vh;
-    }
-
-    .map-nav-button {
-        top: 10px;
-        left: 50%;
-        transform: translateX(-50%);
-        padding: 10px 18px;
-        font-size: 13px;
-    }
-}
-
-@media (max-width: 480px) {
-    .map-overlay-controls {
-        top: 60px;
-        padding: 15px;
-    }
-
-    .map-overlay-controls h3 {
-        font-size: 16px;
-    }
-
-    .map-overlay-stations h3,
-    .map-overlay-routes h3 {
-        font-size: 16px;
-    }
-}
-
-/* Professional EV Driving Cluster Styles */
-
-/* Real EV Dark Dashboard Theme */
-.simulation-right {
-  background: #0f172a !important;
-}
-
-.driving-cluster {
-  display: flex !important;
-  flex-direction: column !important;
-  justify-content: center !important;
-  align-items: center !important;
-  gap: 35px !important;
-  padding: 35px !important;
-  max-width: 550px;
-}
-
-/* Speedometer - Real Dashboard Style */
-#speedometer-container {
-  position: relative !important;
-  text-align: center;
-}
-
-#speedometer {
-  filter: drop-shadow(0 20px 40px rgba(0,0,0,0.5)) !important;
-  transition: all 0.8s cubic-bezier(0.25,0.46,0.45,0.94) !important;
-}
-
-.speed-zone {
-  position: absolute !important;
-  font-weight: 700 !important;
-  font-size: 14px !important;
-  color: #f1f5f9 !important;
-  text-shadow: 1px 1px 4px rgba(0,0,0,0.9) !important;
-  font-family: -apple-system, BlinkMacSystemFont, sans-serif !important;
-  z-index: 10;
-}
-
-.speed-zone.green { top: 50% !important; left: 5% !important; transform: translateY(-50%); color: #22c55e !important; }
-.speed-zone.yellow { top: 10% !important; left: 35% !important; color: #fbbf24 !important; }
-.speed-zone.red { top: 50% !important; right: 5% !important; transform: translateY(-50%); color: #ef4444 !important; }
-
-#digital-speed {
-  position: absolute !important;
-  top: 50% !important;
-  left: 50% !important;
-  transform: translate(-50%, -50%) !important;
-  font-size: 65px !important;
-  font-weight: 900 !important;
-  color: #00ff88 !important;
-  text-shadow: 0 0 25px #00ff88, 0 0 35px #00ff88 !important;
-  z-index: 20 !important;
-  transition: all 0.5s cubic-bezier(0.25,0.46,0.45,0.94);
-  font-family: 'SF Pro Display', -apple-system, sans-serif !important;
-}
-
-#digital-speed.warning {
-  color: #ef4444 !important;
-  text-shadow: 0 0 25px #ef4444, 0 0 45px #ef4444 !important;
-}
-
-/* RPM Gauge */
-#rpm-container { margin-top: 25px !important; }
-#rpm-gauge {
-  filter: drop-shadow(0 15px 35px rgba(239,68,68,0.6)) !important;
-}
-
-#digital-rpm {
-  text-align: center !important;
-  font-size: 45px !important;
-  color: #ef4444 !important;
-  font-weight: 800 !important;
-  text-shadow: 0 0 20px #ef4444 !important;
-  margin-top: 8px !important;
-  transition: all 0.5s ease !important;
-}
-
-#digital-rpm.redline {
-  color: #dc2626 !important;
-  text-shadow: 0 0 30px #dc2626, 0 0 50px #dc2626 !important;
-}
-
-/* Speed Limit Professional Card */
-#speed-limit {
-  text-align: center !important;
-  margin: 30px 0 !important;
-  padding: 25px !important;
-  background: linear-gradient(145deg, #1e293b, #334155) !important;
-  border-radius: 20px !important;
-  border: 2px solid #475569 !important;
-  box-shadow: 0 12px 35px rgba(0,0,0,0.4) !important;
-  backdrop-filter: blur(15px) !important;
-}
-
-#speed-limit div:first-child {
-  font-size: 15px !important;
-  color: #fbbf24 !important;
-  font-weight: 700 !important;
-  margin-bottom: 8px !important;
-  text-transform: uppercase !important;
-  letter-spacing: 1px;
-}
-
-#speed-limit-value {
-  font-size: 42px !important;
-  font-weight: 900 !important;
-  color: #3b82f6 !important;
-  text-shadow: 0 0 15px rgba(59,130,246,0.8) !important;
-  margin-bottom: 5px;
-}
-
-#speed-limit div:last-child {
-  font-size: 14px !important;
-  color: #94a3b8 !important;
-  font-weight: 500 !important;
-}
-
-#speed-limit.warning {
-  background: linear-gradient(145deg, #1f1b1b, #2d1a1a) !important;
-  border-color: #ef4444 !important;
-  box-shadow: 0 0 30px rgba(239,68,68,0.5) !important;
-  animation: warningPulse 1s infinite !important;
-}
-
-@keyframes warningPulse {
-  0%, 100% { transform: scale(1); box-shadow: 0 12px 35px rgba(0,0,0,0.4); }
-  50% { transform: scale(1.02); box-shadow: 0 0 35px rgba(239,68,68,0.6); }
-}
-
-/* Controls - Professional */
-.pedal-slider {
-  touch-action: none !important;
-  user-select: none !important;
-}
-
-.slider-thumb {
-  position: absolute;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  width: 40px;
-  height: 40px;
-  transition: top 0.05s linear;
-}
-
-.slider-thumb.active {
-  transform: scale(1.12) !important;
-  box-shadow: 0 18px 45px rgba(0,0,0,0.6), 0 0 40px rgba(34,197,94,0.9) !important;
-}
-
-.slider-thumb.accel, .slider-thumb.regen {
-  border: 4px solid #22c55e !important;
-  box-shadow: 0 0 35px rgba(34,197,94,0.9) !important;
-}
-
-#pedal-indicator {
-  transition: all 0.35s ease !important;
-  font-family: -apple-system, BlinkMacSystemFont, sans-serif !important;
-  text-shadow: 0 1px 3px rgba(0,0,0,0.5);
-}
-
-#pedal-indicator.accel { color: #22c55e !important; }
-#pedal-indicator.regen { color: #3b82f6 !important; }
-#pedal-indicator.neutral { color: #94a3b8 !important; }
-
-/* Brake Button */
-#brake-button {
-  width: 85px !important;
-  height: 85px !important;
-  border: none !important;
-  border-radius: 50% !important;
-  background: linear-gradient(145deg, #ef4444, #dc2626) !important;
-  box-shadow: 0 10px 30px rgba(239,68,68,0.5), inset 0 4px 8px rgba(255,255,255,0.25) !important;
-  color: white !important;
-  font-size: 18px !important;
-  font-weight: 800 !important;
-  cursor: pointer !important;
-  transition: all 0.25s cubic-bezier(0.4,0,0.2,1) !important;
-  position: relative !important;
-  overflow: hidden !important;
-  text-transform: uppercase !important;
-  letter-spacing: 1px;
-}
-
-#brake-button:hover {
-  transform: translateY(-3px) !important;
-  box-shadow: 0 15px 40px rgba(239,68,68,0.6) !important;
-}
-
-#brake-button.active {
-  background: linear-gradient(145deg, #dc2626, #b91c1c) !important;
-  box-shadow: 0 0 35px rgba(239,68,68,0.8), inset 0 2px 4px rgba(255,255,255,0.1) !important;
-  animation: brakeActive 1s infinite !important;
-}
-
-@keyframes brakeActive {
-  0%, 100% { transform: scale(1); }
-  50% { transform: scale(1.05); }
-}
-
-/* Mobile Responsive */
-@media (max-width: 768px) {
-  .driving-cluster { 
-    gap: 28px !important; 
-    padding: 25px !important; 
-  }
-  
-  #speedometer { 
-    width: 260px !important; 
-    height: 260px !important; 
-  }
-  #rpm-gauge { 
-    width: 200px !important; 
-    height: 200px !important; 
-  }
-  #digital-speed { font-size: 50px !important; }
-  
-  .controls-row {
-    flex-direction: column !important;
-    gap: 25px !important;
-  }
-  
-  #pedal-slider, #brake-button { width: 75px !important; height: 75px !important; }
-}
-
-/* Typography */
-#digital-speed, #digital-rpm, #speed-limit-value {
-  font-family: 'SF Pro Display', -apple-system, BlinkMacSystemFont, sans-serif !important;
-}
-
-/* Hide simulation on dashboard page ONLY */
-.dashboard-page #simulation-container,
-.dashboard-page .driving-cluster {
-  display: none !important;
-}
-
-/* Mobile responsive for dashboard pages */
-@media (max-width: 1024px) {
-    .sidebar {
-        width: 200px;
-    }
-
-    .main-content {
-        margin-left: 200px;
-    }
-
-    .dashboard-grid {
-        grid-template-columns: 1fr;
-    }
-}
-
-@media (max-width: 768px) {
-    .sidebar {
-        width: 100%;
-        height: auto;
-        position: relative;
-        padding: 10px;
-    }
-
-    .sidebar-menu {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 5px;
-    }
-
-    .sidebar-menu li {
-        margin: 0;
-    }
-
-    .sidebar-menu a {
-        padding: 8px 12px;
-        font-size: 12px;
-    }
-
-    .main-content {
-        margin-left: 0;
-        padding: 10px;
-    }
-
-    .top-bar {
-        flex-direction: column;
-        gap: 10px;
-    }
-
-    .profile-header {
-        flex-direction: column;
-        align-items: center;
-        text-align: center;
-    }
-
-    .settings-container {
-        padding: 15px;
-    }
-}
-
-/* EV Theme - Wider Cards */
-.result-card,
-.prediction-card {
-    width: 100%;
-    max-width: 900px;
-    margin: auto;
-    background: white;
-    border-radius: 12px;
-    padding: 30px;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-}
-
-/* EV Theme Button */
-.btn-primary {
-    background: linear-gradient(90deg, #1565c0, #00c853);
-    border: none;
-    color: white;
-    padding: 12px 24px;
-    border-radius: 8px;
-    font-size: 16px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: transform 0.2s, box-shadow 0.2s;
-}
-
-.btn-primary:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 5px 15px rgba(0, 200, 83, 0.4);
-}
-
-/* Metrics Grid for Result Page */
-.metrics-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: 20px;
-    margin-top: 20px;
-}
-
-.metric-card {
-    background: white;
-    border-radius: 12px;
-    padding: 20px;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-    text-align: center;
-}
-
-.metric-card .metric-label {
-    font-size: 14px;
-    color: #666;
-    margin-bottom: 8px;
-}
-
-.metric-card .metric-value {
-    font-size: 24px;
-    font-weight: bold;
-    color: #1565c0;
-}
-
-.metric-card .metric-unit {
-    font-size: 12px;
-    color: #999;
-}
-
-/* Nearby Charging Stations Section */
-.nearby-stations-section {
-    margin-top: 30px;
-    padding: 20px;
-    background: white;
-    border-radius: 12px;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-}
-
-.nearby-stations-section h3 {
-    margin: 0 0 15px 0;
-    color: #1565c0;
-    font-size: 18px;
-    border-bottom: 2px solid #00c853;
-    padding-bottom: 10px;
-}
-
-.nearby-station-card {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 15px;
-    border: 1px solid #eee;
-    border-radius: 8px;
-    margin-bottom: 10px;
-}
-
-.nearby-station-card:last-child {
-    margin-bottom: 0;
-}
-
-.nearby-station-card .station-info {
-    flex: 1;
-}
-
-.nearby-station-card .station-name {
-    font-weight: 600;
-    color: #333;
-    margin-bottom: 4px;
-}
-
-.nearby-station-card .station-operator {
-    font-size: 12px;
-    color: #666;
-}
-
-.nearby-station-card .station-distance {
-    font-size: 14px;
-    color: #00c853;
-    font-weight: 600;
-    margin-right: 15px;
-}
-
-.nearby-station-card .station-nav-btn {
-    padding: 8px 16px;
-    background: linear-gradient(90deg, #1565c0, #00c853);
-    color: white;
-    border: none;
-    border-radius: 6px;
-    cursor: pointer;
-    font-size: 12px;
-    font-weight: 600;
-}
-
-.nearby-station-card .station-nav-btn:hover {
-    opacity: 0.9;
-}
-
-/* Charging Stations List Section */
-.charging-stations-section {
-    margin-top: 25px;
-    background: white;
-    padding: 20px;
-    border-radius: 10px;
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
-}
-
-/* EV Range Layout Fixes */
-.live-simulation {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 15px;
-}
-
-.live-adaptive-container {
-display: grid;
-grid-template-columns: repeat(3, 1fr);
-gap: 15px;
-}
-
-.sim-card {
-min-width: 140px;
-padding: 15px;
-text-align: center;
-}
-
-.sim-card h3 {
-font-size: 20px;
-}
-
-.sim-card p {
-font-size: 14px;
-}
-
-.simulation-container {
-    width: 100%;
-}
-
-.charging-stations-section h3 {
-    margin: 0 0 15px 0;
-    color: #1565c0;
-    font-size: 18px;
-    border-bottom: 2px solid #00c853;
-    padding-bottom: 10px;
-}
-
-.station-card {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 12px;
-    border-bottom: 1px solid #eee;
-}
-
-.station-card:last-child {
-    border-bottom: none;
-}
-
-.station-info {
-    font-size: 14px;
-    flex: 1;
-}
-
-.station-info strong {
-    color: #333;
-    display: block;
-    margin-bottom: 4px;
-}
-
-.station-distance {
-    color: #1565c0;
-    font-weight: 600;
-    font-size: 14px;
-    margin-right: 15px;
-}
-
-.navigate-btn {
-    background: #00c853;
-    color: white;
-    border: none;
-    padding: 6px 12px;
-    border-radius: 6px;
-    cursor: pointer;
-    font-size: 13px;
-    font-weight: 500;
-    transition: background 0.3s;
-}
-
-.navigate-btn:hover {
-    background: #00a844;
-}
+ Asc Asc Asc display Asc flex;
+ Asc   flex-direction Asc column;
+ Asc   align-items Asc center;
+ Asc   gap Asc 15px;
+ Asc   padding Asc 20px;
+ Asc Asc Asc Asc Asc Asc Asc Asc Asc Asc Asc Asc Asc Asc Asc Asc Asc Asc Asc Asc Asc Asc Asc Asc Asc Asc Asc Asc Asc Asc Asc Asc Asc Asc Asc Asc Asc Asc Asc Asc Asc "f9f9f9";
+ Asc   border-radius Asc Asc 8px;
+ Asc   border Asc Asc Asc Asc Asc Asc Asc Asc Asc Asc Asc Asc Asc Asc Asc Asc Asc Asc Asc Asc Asc Asc Asc Asc Asc Asc Asc Asc Asc Asc Asc Asc Asc Asc Asc Asc Asc Asc Asc Asc Asc Asc Asc Asc Asc Asc Asc Asc Asc Asc Asc Asc Asc Asc Asc Asc Asc Asc Asc Asc Asc Asc Asc Asc Asc Asc Asc Asc Asc Asc Asc Asc Asc Asc Asc Asc Asc Asc Asc Asc Asc Asc Asc Asc Asc Asc Asc Asc Asc Asc Asc Asc Asc Asc Asc Asc Asc Asc Asc Asc Asc Asc Asc Asc Asc Asc Asc Asc Asc Asc Asc Asc Asc Asc Asc Asc Asc Asc Asc Asc Asc Asc Asc Asc file Asc Asc Asc Asc Asc Asc Asc Asc Asc Asc Asc Asc Asc Asc Asc Asc Asc Asc Asc Asc Asc Asc Asc Asc Asc Asc Asc Asc Asc Asc Asc Asc Asc Asc Asc Asc Asc Asc Asc Asc Asc Asc Asc Asc Asc Asc Asc Asc Asc Asc Asc Asc Asc Asc Asc Asc Asc Asc Asc Asc Asc Asc Asc Asc Asc Asc Asc Asc Asc Asc Asc Asc Asc 
